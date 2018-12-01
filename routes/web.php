@@ -16,6 +16,7 @@ Route::get('/', function () {
 });
 
 Route::prefix('/delete')->group(function () {
-    Route::get('/createExcel', 'Tools\deleteController@createExcel');
+    Route::get('/index', 'Tools\\deleteController@index');
+    Route::Post('/createExcel', 'Tools\\deleteController@createExcel');
 });
 
