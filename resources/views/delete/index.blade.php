@@ -69,7 +69,7 @@
     <div class="content">
         <form action="{{url('delete/createExcel')}}" method="post">
             @csrf
-            <input type="text" name="tableName" value="{{old('tableName')}}">
+            <textarea name="sql" rows="24" cols="72" value="{{old('tableName')}}"></textarea>
             <input type="submit" value="submit">
         </form>
         @if(session('table') == 'notExists')
