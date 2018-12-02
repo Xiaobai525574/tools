@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Laravel</title>
+    <title>Select</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
@@ -67,9 +67,12 @@
 <body>
 <div class="flex-center position-ref full-height">
     <div class="content">
-        <form action="{{url('delete/createExcel')}}" method="post">
+        <form action="{{url('select/createExcel')}}" method="post">
             @csrf
-            <textarea name="sql" rows="24" cols="72">{{old('sql')}}</textarea>
+            <label for="table">表名：</label>
+            <input type="text" name="table" id="table" value="{{old('table')}}">
+            <label for="rowNum">数据条数：</label>
+            <input type="text" name="rowNum" id="rowNum" value="{{old('rowNum')}}">
             <input type="submit" value="submit">
         </form>
         @if(session('table') == 'notExists')

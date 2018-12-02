@@ -17,6 +17,11 @@ Route::get('/', function () {
 
 Route::prefix('/delete')->group(function () {
     Route::get('/index', 'Tools\\deleteController@index');
-    Route::Post('/createExcel', 'Tools\\deleteController@createExcel');
+    Route::post('/createExcel', 'Tools\\deleteController@createExcel');
+});
+
+Route::prefix('/select')->group(function () {
+    Route::get('/index', 'Tools\\selectController@index');
+    Route::post('/createExcel', 'Tools\\selectController@createExcel');
 });
 
