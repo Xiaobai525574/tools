@@ -14,21 +14,22 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     /**
-     * @param $excelPath
+     * @param $savePath
+     * @param $tablePath
      * @param $rowNum
-     * @return bool|string
+     * @return bool
      */
-    public function exportExcel($excelPath, $rowNum)
+    public function exportExcel($savePath, $tablePath, $rowNum)
     {
-        $tableExcelPath = str_replace(config('tools.storage.select'), config('tools.storage.tables'), $excelPath);
-        if (!Storage::disk('local')->exists($tableExcelPath)) return false;
-        $tableExcel = $this->doExcel(config('filesystems.disks.local.root') . $tableExcelPath, $rowNum);
-        return $this->saveExcel($tableExcel, $excelPath);
+        if (!Storage::disk('local')->exists($tablePath)) return false;
+        $tableExcel = $this->doExcel(config('filesystems.disks.local.root') . $tablePath, $rowNum);
+
+        return $this->saveExcel($tableExcel, $savePath);
     }
 
     /**
      * 生成Excel
-     * @param $tableExcelAP sql表的绝对路径
+     * @param $tableExcelAP String sql表的绝对路径
      * @param $rowNum
      * @return \PHPExcel
      */
@@ -48,16 +49,17 @@ class Controller extends BaseController
     /**
      * save Excel
      * @param $tableExcel
-     * @param $excelPath
+     * @param $savePath
      * @throws \PHPExcel_Reader_Exception
      * @throws \PHPExcel_Writer_Exception
      */
-    protected function saveExcel($tableExcel, $excelPath)
+    protected function saveExcel($tableExcel, $savePath)
     {
         $excelWriter = PHPExcel_IOFactory::createWriter($tableExcel, 'Excel2007');
-        if (Storage::disk('local')->exists($excelPath)) Storage::delete($excelPath);
+        if (Storage::disk('local')->exists($savePath)) Storage::delete($savePath);
+        $excelWriter->save(config('filesystems.disks.local.root') . $savePath);
 
-        return $excelWriter->save(config('filesystems.disks.local.root') . $excelPath);
+        return true;
     }
 
     /**
