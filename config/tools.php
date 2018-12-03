@@ -1,6 +1,13 @@
 <?php
 return [
-    'storageAppPath' => storage_path('app\\'),
-    'tablesPath' => storage_path('app\\public\\tables\\'),
-    'deleteExcelPath' => storage_path('app\\public\\delete\\')
+    'storage' => [
+        'appAP' => storage_path('app\\'),
+        'tablesAP' => storage_path('app\\public\\tables\\'),
+        'deleteAP' => storage_path('app\\public\\delete\\'),
+        'selectAP' => storage_path('app\\public\\select\\'),
+
+        'tablesPath' => '\\public\\tables\\',
+        'deletePath' => '\\public\\delete\\',
+        'selectPath' => '\\public\\select\\'
+    ]
 ];

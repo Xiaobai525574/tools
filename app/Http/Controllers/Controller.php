@@ -14,28 +14,27 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     /**
-     * @param $excelName
+     * @param $excelPath
      * @param $rowNum
      * @return bool|string
      */
-    public function exportExcel($excelName, $rowNum)
+    public function exportExcel($excelPath, $rowNum)
     {
-        if (!Storage::disk('local')->exists('public\\tables\\' . $excelName)) return false;
-
-        $tableExcel = $this->doExcel($excelName, $rowNum);
-        $this->saveExcel($tableExcel, $excelName);
-        return 'public\\delete\\' . $excelName;
+        $tableExcelPath = str_replace(config('tools.storage.select'), config('tools.storage.tables'), $excelPath);
+        if (!Storage::disk('local')->exists($tableExcelPath)) return false;
+        $tableExcel = $this->doExcel(config('filesystems.disks.local.root') . $tableExcelPath, $rowNum);
+        return $this->saveExcel($tableExcel, $excelPath);
     }
 
     /**
      * 生成Excel
-     * @param $excelName
+     * @param $tableExcelAP sql表的绝对路径
      * @param $rowNum
      * @return \PHPExcel
      */
-    protected function doExcel($excelName, $rowNum)
+    protected function doExcel($tableExcelAP, $rowNum)
     {
-        $tableExcel = PHPExcel_IOFactory::load(config('tools.tablesPath') . $excelName);
+        $tableExcel = PHPExcel_IOFactory::load($tableExcelAP);
         $sheet = $tableExcel->getSheet(0);
         $sheetArray = $sheet->toArray(null, true, true, true);
         $this->formatRow($sheetArray[2]);
@@ -49,17 +48,16 @@ class Controller extends BaseController
     /**
      * save Excel
      * @param $tableExcel
-     * @param $excelName
+     * @param $excelPath
      * @throws \PHPExcel_Reader_Exception
      * @throws \PHPExcel_Writer_Exception
      */
-    protected function saveExcel($tableExcel, $excelName)
+    protected function saveExcel($tableExcel, $excelPath)
     {
         $excelWriter = PHPExcel_IOFactory::createWriter($tableExcel, 'Excel2007');
-        $path = storage_path("app\\public\\") . $excelName;
-        if (Storage::disk('local')->exists($path)) Storage::delete($path);
+        if (Storage::disk('local')->exists($excelPath)) Storage::delete($excelPath);
 
-        $excelWriter->save($path);
+        return $excelWriter->save(config('filesystems.disks.local.root') . $excelPath);
     }
 
     /**

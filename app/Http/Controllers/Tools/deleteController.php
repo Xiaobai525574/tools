@@ -37,21 +37,6 @@ class deleteController extends Controller
         return Storage::download($excelPath);
     }
 
-    /**
-     * save Excel
-     * @param $tableExcel
-     * @param $excelName
-     * @throws \PHPExcel_Reader_Exception
-     * @throws \PHPExcel_Writer_Exception
-     */
-    protected function saveExcel($tableExcel, $excelName)
-    {
-        $excelWriter = PHPExcel_IOFactory::createWriter($tableExcel, 'Excel2007');
-        $path = storage_path("app\\public\\delete\\") . $excelName;
-        if (Storage::disk('local')->exists($path)) Storage::delete($path);
-
-        $excelWriter->save($path);
-    }
 //
 //    /**
 //     * 生成Excel
