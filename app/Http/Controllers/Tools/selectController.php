@@ -29,9 +29,6 @@ class selectController extends Controller
         $rowNum = $request->input('rowNum');
         if (!$this->exportExcel($savePath, $tablePath, $rowNum)) return redirect()->back()->with('table', 'notExists')->withInput();
 
-        $this->getExcel();
-        
-
         return Storage::download($savePath);
     }
 
