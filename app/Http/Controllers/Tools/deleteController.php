@@ -28,9 +28,11 @@ class deleteController extends Controller
     public function createExcel(Request $request)
     {
         $sql = $this->sqlToArray($request->input('sql'));
+        $this->setTable($sql['table']);
+        $this->setWheres($sql['wheres']);
         $savePath = config('tools.storage.deletePath') . $sql['table'] . '.xlsx';
         $tablePath = config('tools.storage.tablesPath') . $sql['table'] . '.xlsx';;
-        if (!$this->exportExcel($savePath, $tablePath, count($sql['where']) + 2)) {
+        if (!$this->exportExcel($savePath, $tablePath, count($sql['wheres']) + 2)) {
             return redirect()->back()->with('table', 'notExists')->withInput();
         }
 

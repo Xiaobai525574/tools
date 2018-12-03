@@ -13,6 +13,12 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    /*表名*/
+    private $table;
+
+    /*where条件数组*/
+    private $wheres;
+
     /**
      * @param $savePath
      * @param $tablePath
@@ -36,6 +42,12 @@ class Controller extends BaseController
     protected function doExcel($tableExcelAP, $rowNum)
     {
         $tableExcel = PHPExcel_IOFactory::load($tableExcelAP);
+        /*删除多余sheet页*/
+        $count = $tableExcel->getSheetCount();
+        for ($i = 1; $i < $count; $i++) {
+            $tableExcel->removeSheetByIndex(1);
+        }
+        /*添加数据*/
         $sheet = $tableExcel->getSheet(0);
         $sheetArray = $sheet->toArray(null, true, true, true);
         $this->formatRow($sheetArray[2]);
@@ -43,7 +55,21 @@ class Controller extends BaseController
             $this->addRow($sheetArray);
         }
         $sheet->fromArray($sheetArray);
+        /*格式化数据*/
+        $countRow = count($sheetArray);
+        for ($i = 3; $i <= $countRow; $i++) {
+            foreach ($sheetArray[$i] as $key => $row) {
+                $style = $sheet->getCell($key . '2')->getStyle();
+                $sheet->setSharedStyle($style, $key . $i);
+            }
+        }
+
         return $tableExcel;
+    }
+
+    protected function colorExcel($tableExcel, $pValue)
+    {
+        $tableExcel;
     }
 
     /**
@@ -73,7 +99,7 @@ class Controller extends BaseController
         foreach ($row as $key => &$val) {
             $length = mb_strlen($val);
             if ($length > 1) {
-                $val = mb_substr($val, 0, $length - 2) . sprintf("%02d", $j);
+                $val = $this->cellNumbered($val, $j);
                 $j++;
             } elseif ($length == 1) {
                 $val = $i;
@@ -93,13 +119,24 @@ class Controller extends BaseController
         foreach ($lastRow as $key => $val) {
             $length = mb_strlen($val);
             if ($length > 1) {
-                $row[$key] = mb_substr($val, 0, $length - 2)
-                    . sprintf("%02d", mb_substr($val, -2) + 1);
+                $row[$key] = $this->cellNumbered($val);
             } elseif ($length == 1) {
                 $row[$key] = ($val >= 9) ? '0' : ($val + 1);
             }
         }
         if ($row) array_push($sheetArray, $row);
+    }
+
+    /**
+     * 单元格数据进行编码，确保唯一性
+     * @param $cellVal
+     * @param bool $cellNum
+     * @return string
+     */
+    protected function cellNumbered($cellVal, $cellNum = false)
+    {
+        if ($cellNum === false) $cellNum = mb_substr($cellVal, 0, 2) + 1;
+        return sprintf("%02d", $cellNum) . mb_substr($cellVal, 2);
     }
 
     /**
@@ -122,9 +159,29 @@ class Controller extends BaseController
         $wheres = explode('and', $sql[1]);
         foreach ($wheres as &$value) {
             $value = trim($value);
-            $result['where'][] = explode(' ', $value);
+            $result['wheres'][] = explode(' ', $value);
         }
 
         return $result;
+    }
+
+    protected function getTable()
+    {
+        return $this->table;
+    }
+
+    protected function setTable($table)
+    {
+        $this->table = $table;
+    }
+
+    protected function getWheres()
+    {
+        return $this->wheres;
+    }
+
+    protected function setWheres($wheres)
+    {
+        $this->wheres = $wheres;
     }
 }

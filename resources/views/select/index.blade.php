@@ -69,10 +69,12 @@
     <div class="content">
         <form action="{{url('select/createExcel')}}" method="post">
             @csrf
-            <label for="table">表名：</label>
-            <input type="text" name="table" id="table" value="{{old('table')}}">
+            <label for="tableName">sql表名：</label>
+            <input type="text" name="tableName" id="tableName" value="{{old('tableName')}}" size="30">
             <label for="rowNum">数据条数：</label>
-            <input type="text" name="rowNum" id="rowNum" value="{{old('rowNum')}}">
+            <input type="text" name="rowNum" id="rowNum" value="{{old('rowNum')}}" size="10">
+            <label for="excelName">Excel表名：</label>
+            <input type="text" name="excelName" id="excelName" value="{{old('excelName')}}" size="30">
             <input type="submit" value="submit">
         </form>
         @if(session('table') == 'notExists')
