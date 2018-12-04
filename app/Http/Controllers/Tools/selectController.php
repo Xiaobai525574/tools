@@ -22,7 +22,7 @@ class selectController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function createExcel(Request $request)
+    public function getExcel(Request $request)
     {
         $savePath = config('tools.storage.selectPath') . $request->input('excelName') . '.xlsx';
         $tablePath = config('tools.storage.tablesPath') . $request->input('tableName') . '.xlsx';;

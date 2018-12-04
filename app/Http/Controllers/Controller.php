@@ -13,6 +13,9 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    /*id例如：execPKTS0005*/
+    private $id;
+
     /*表名*/
     private $table;
 
@@ -144,7 +147,7 @@ class Controller extends BaseController
      * @param $sql
      * @return mixed
      */
-    protected function sqlToArray($sql)
+    protected function setSql($sql)
     {
         $sql = trim(strtolower($sql));
         $sql = str_replace(array("\r\n", "\r", "\n"), " ", $sql);
@@ -163,6 +166,16 @@ class Controller extends BaseController
         }
 
         return $result;
+    }
+
+    protected function getId()
+    {
+        return $this->id;
+    }
+
+    protected function setid($id)
+    {
+        $this->id = $id;
     }
 
     protected function getTable()

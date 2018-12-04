@@ -25,18 +25,21 @@ class deleteController extends Controller
      * @throws \PHPExcel_Exception
      * @throws \PHPExcel_Reader_Exception
      */
-    public function createExcel(Request $request)
+    public function getExcel(Request $request)
     {
-        $sql = $this->sqlToArray($request->input('sql'));
-        $this->setTable($sql['table']);
-        $this->setWheres($sql['wheres']);
-        $savePath = config('tools.storage.deletePath') . $sql['table'] . '.xlsx';
-        $tablePath = config('tools.storage.tablesPath') . $sql['table'] . '.xlsx';;
-        if (!$this->exportExcel($savePath, $tablePath, count($sql['wheres']) + 2)) {
+        $this->setSql($request->input('sql'));
+        $savePath = config('tools.storage.deletePath') . 'exec' . $this->getId() . '_001.xlsx';
+        $tablePath = config('tools.storage.tablesPath') . $this->getTable() . '.xlsx';;
+        if (!$this->exportExcel($savePath, $tablePath, count($this->getWheres()) + 2)) {
             return redirect()->back()->with('table', 'notExists')->withInput();
         }
 
         return Storage::download($savePath);
+    }
+
+    public function getCode(Request $request)
+    {
+        return 233;
     }
 
 }
