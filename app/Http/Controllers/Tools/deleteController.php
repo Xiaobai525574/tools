@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tools;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\sqlExcelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,7 +14,7 @@ class deleteController extends Controller
      * delete首页
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function index()
+    public function index(sqlExcelService $sqlExcel)
     {
         return view('delete/index');
     }
@@ -29,7 +30,6 @@ class deleteController extends Controller
     {
         $this->setSql($request->input('sql'));
         $excel = $this->createExcel();
-        $excel =
 
 
 

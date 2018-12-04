@@ -6,6 +6,11 @@
 
 @section('css')
     <style>
+        .delete-form textarea {
+            width: 100%;
+            height: 360px;
+        }
+
         .delete-form .delete-btn input {
             margin: 10px 0;
             width: 100%;
@@ -20,14 +25,14 @@
         <div class="container delete-form">
             <div class="row">
                 <div class="col-md-5">
-                    <textarea name="sql" rows="24" style="width: 100%;">{{old('sql')}}</textarea>
+                    <textarea name="sql">{{old('sql')}}</textarea>
                 </div>
                 <div class="col-md-2 delete-btn">
                     <input id="getExcel" class="btn btn-default btn-info" type="submit" value="Excel">
                     <input id="getCode" class="btn btn-default btn-info" type="button" value="Code">
                 </div>
                 <div class="col-md-5">
-                    <textarea name="sql" rows="24" style="width: 100%;">{{old('sql')}}</textarea>
+                    <textarea id="code">{{old('sql')}}</textarea>
                 </div>
             </div>
         </div>
