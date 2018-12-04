@@ -14,13 +14,13 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     /*id例如：execPKTS0005*/
-    private $id;
+    private $id = null;
 
     /*表名*/
-    private $table;
+    private $table = null;
 
     /*where条件数组*/
-    private $wheres;
+    private $wheres = null;
 
     /**
      * @param $savePath
@@ -149,23 +149,40 @@ class Controller extends BaseController
      */
     protected function setSql($sql)
     {
-        $sql = trim(strtolower($sql));
         $sql = str_replace(array("\r\n", "\r", "\n"), " ", $sql);
         $sql = preg_replace("/[\s]+/is", " ", $sql);
 
+        /*id*/
+        $sql = explode('>', $sql);
+        $id = $sql[0];
+        $id = explode('"', $id);
+        $result['id'] = trim($id[1]);
+
         /*table*/
-        $sql = explode('from', $sql)[1];
+        $sql = explode('from', strtolower($sql[1]))[1];
         $sql = explode('where', $sql);
-        $result['table'] = trim($sql[0]);
+        $table = $sql[0];
+        $sql = $sql[1];
+        $table = explode('.', $table)[1];
+        $result['table'] = trim($table);
 
         /*where*/
-        $wheres = explode('and', $sql[1]);
+        $wheres = explode('and', $sql);
         foreach ($wheres as &$value) {
             $value = trim($value);
             $result['wheres'][] = explode(' ', $value);
         }
 
         return $result;
+    }
+
+    protected function getSql()
+    {
+        return [
+            'id' => $this->getId(),
+            'table' => $this->getTable(),
+            'wheres' => $this->getWheres()
+        ];
     }
 
     protected function getId()

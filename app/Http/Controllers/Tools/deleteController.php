@@ -28,6 +28,16 @@ class deleteController extends Controller
     public function getExcel(Request $request)
     {
         $this->setSql($request->input('sql'));
+        $excel = $this->createExcel();
+        $excel =
+
+
+
+
+
+
+
+
         $savePath = config('tools.storage.deletePath') . 'exec' . $this->getId() . '_001.xlsx';
         $tablePath = config('tools.storage.tablesPath') . $this->getTable() . '.xlsx';;
         if (!$this->exportExcel($savePath, $tablePath, count($this->getWheres()) + 2)) {
