@@ -149,29 +149,31 @@ class Controller extends BaseController
      */
     protected function setSql($sql)
     {
+        /*去除换行符*/
         $sql = str_replace(array("\r\n", "\r", "\n"), " ", $sql);
+        /*去除多余空格*/
         $sql = preg_replace("/[\s]+/is", " ", $sql);
 
-        /*id*/
-        $sql = explode('>', $sql);
-        $id = $sql[0];
-        $id = explode('"', $id);
-        $result['id'] = trim($id[1]);
+        /*获取xml标签里的id*/
+        $result['id'] = trim(explode('"', explode('>', $sql)[0])[1]);
+        $this->setId($result['id']);
+
+        /*获取sql字符串，并转为小写、去除xml标签、去除sql注释*/
+        $sql = explode('--', strip_tags(strtolower($sql)))[0];
 
         /*table*/
-        $sql = explode('from', strtolower($sql[1]))[1];
-        $sql = explode('where', $sql);
-        $table = $sql[0];
+        $sql = explode('where', explode('from', $sql)[1]);
+        $result['table'] = trim(explode('.', $sql[0])[1]);
+        $this->setTable($result['table']);
         $sql = $sql[1];
-        $table = explode('.', $table)[1];
-        $result['table'] = trim($table);
 
         /*where*/
         $wheres = explode('and', $sql);
-        foreach ($wheres as &$value) {
+        foreach ($wheres as $value) {
             $value = trim($value);
             $result['wheres'][] = explode(' ', $value);
         }
+        $this->setWheres($result['wheres']);
 
         return $result;
     }
@@ -190,7 +192,7 @@ class Controller extends BaseController
         return $this->id;
     }
 
-    protected function setid($id)
+    protected function setId($id)
     {
         $this->id = $id;
     }

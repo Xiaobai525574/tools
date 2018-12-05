@@ -20,7 +20,7 @@
 @stop
 
 @section('content')
-    <form action="{{url('delete/createExcel')}}" method="post">
+    <form id="getExcel" action="{{url('delete/getExcel')}}" method="post">
         @csrf
         <div class="container delete-form">
             <div class="row">

@@ -17,4 +17,20 @@ class sqlExcelService extends Spreadsheet
     {
         echo 233;
     }
+
+    public function addData()
+    {
+        return $this;
+    }
+
+    public function colorData()
+    {
+        return $this;
+    }
+
+    public function saveSqlExcel()
+    {
+        return 233;
+    }
+
 }

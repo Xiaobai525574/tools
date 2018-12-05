@@ -14,7 +14,7 @@ class deleteController extends Controller
      * delete首页
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function index(sqlExcelService $sqlExcel)
+    public function index()
     {
         return view('delete/index');
     }
@@ -26,25 +26,14 @@ class deleteController extends Controller
      * @throws \PHPExcel_Exception
      * @throws \PHPExcel_Reader_Exception
      */
-    public function getExcel(Request $request)
+    public function getExcel(Request $request, sqlExcelService $sqlExcel)
     {
         $this->setSql($request->input('sql'));
-        $excel = $this->createExcel();
+        $sqlExcelPath = $sqlExcel->addData()
+            ->colorData()
+            ->saveSqlExcel();
 
-
-
-
-
-
-
-
-        $savePath = config('tools.storage.deletePath') . 'exec' . $this->getId() . '_001.xlsx';
-        $tablePath = config('tools.storage.tablesPath') . $this->getTable() . '.xlsx';;
-        if (!$this->exportExcel($savePath, $tablePath, count($this->getWheres()) + 2)) {
-            return redirect()->back()->with('table', 'notExists')->withInput();
-        }
-
-        return Storage::download($savePath);
+        return Storage::download($sqlExcelPath);
     }
 
     public function getCode(Request $request)
