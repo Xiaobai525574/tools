@@ -29,11 +29,14 @@ class deleteController extends Controller
     public function getExcel(Request $request, sqlExcelService $sqlExcel)
     {
         $this->setSql($request->input('sql'));
-        $sqlExcelPath = $sqlExcel->addData()
+        $savePath = config('tools.storage.deletePath') . 'setup_' . $this->getId() . '_001.xlsx';
+        $sqlExcel->getSqlExcel($this->getTables())
+            ->sortFirstRow()
+            ->addData()
             ->colorData()
-            ->saveSqlExcel();
+            ->saveSqlExcel($savePath);
 
-        return Storage::download($sqlExcelPath);
+        return Storage::download($savePath);
     }
 
     public function getCode(Request $request)

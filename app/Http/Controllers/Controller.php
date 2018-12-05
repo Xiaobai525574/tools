@@ -17,10 +17,10 @@ class Controller extends BaseController
     private $id = null;
 
     /*表名*/
-    private $table = null;
+    private $tables = [];
 
     /*where条件数组*/
-    private $wheres = null;
+    private $wheres = [];
 
     /**
      * @param $savePath
@@ -155,34 +155,32 @@ class Controller extends BaseController
         $sql = preg_replace("/[\s]+/is", " ", $sql);
 
         /*获取xml标签里的id*/
-        $result['id'] = trim(explode('"', explode('>', $sql)[0])[1]);
-        $this->setId($result['id']);
+        $this->setId(trim(explode('"', explode('>', $sql)[0])[1]));
 
         /*获取sql字符串，并转为小写、去除xml标签、去除sql注释*/
         $sql = explode('--', strip_tags(strtolower($sql)))[0];
 
-        /*table*/
+        /*tables*/
         $sql = explode('where', explode('from', $sql)[1]);
-        $result['table'] = trim(explode('.', $sql[0])[1]);
-        $this->setTable($result['table']);
+        $this->setTables([trim(explode('.', $sql[0])[1])]);
         $sql = $sql[1];
 
-        /*where*/
+        /*wheres*/
         $wheres = explode('and', $sql);
         foreach ($wheres as $value) {
             $value = trim($value);
-            $result['wheres'][] = explode(' ', $value);
+            $wheresArr[] = explode(' ', $value);
         }
-        $this->setWheres($result['wheres']);
+        $this->setWheres($wheresArr);
 
-        return $result;
+        return $this->getSql();
     }
 
     protected function getSql()
     {
         return [
             'id' => $this->getId(),
-            'table' => $this->getTable(),
+            'tables' => $this->getTables(),
             'wheres' => $this->getWheres()
         ];
     }
@@ -197,14 +195,14 @@ class Controller extends BaseController
         $this->id = $id;
     }
 
-    protected function getTable()
+    protected function getTables()
     {
-        return $this->table;
+        return $this->tables;
     }
 
-    protected function setTable($table)
+    protected function setTables($tables)
     {
-        $this->table = $table;
+        $this->tables = $tables;
     }
 
     protected function getWheres()
