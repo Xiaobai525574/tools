@@ -7,5 +7,10 @@ return [
     ],
     'excel' => [
         'type' => 'xlsx'
+    ],
+    'color' => [
+        'red' => 'FF0000',
+        'orange' => '',
+        'yellow' => '',
     ]
 ];

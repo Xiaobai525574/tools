@@ -1,86 +1,59 @@
-<!doctype html>
-<html lang="{{ app()->getLocale() }}">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@extends('layouts.tools')
 
-    <title>Select</title>
+@section('title')
+    Select
+@stop
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
-
-    <!-- Styles -->
+@section('css')
     <style>
-        html, body {
-            background-color: #fff;
-            color: #636b6f;
-            font-family: 'Raleway', sans-serif;
-            font-weight: 100;
-            height: 100vh;
-            margin: 0;
+        .select-form textarea {
+            width: 100%;
+            height: 360px;
         }
 
-        .full-height {
-            height: 100vh;
-        }
-
-        .flex-center {
-            align-items: center;
-            display: flex;
-            justify-content: center;
-        }
-
-        .position-ref {
-            position: relative;
-        }
-
-        .top-right {
-            position: absolute;
-            right: 10px;
-            top: 18px;
-        }
-
-        .content {
-            text-align: center;
-        }
-
-        .title {
-            font-size: 84px;
-        }
-
-        .links > a {
-            color: #636b6f;
-            padding: 0 25px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: .1rem;
-            text-decoration: none;
-            text-transform: uppercase;
-        }
-
-        .m-b-md {
-            margin-bottom: 30px;
+        .select-form .select-btn input {
+            margin: 10px 0;
+            width: 100%;
+            display: block;
         }
     </style>
-</head>
-<body>
-<div class="flex-center position-ref full-height">
-    <div class="content">
-        <form action="{{url('select/createExcel')}}" method="post">
-            @csrf
-            <label for="tableName">sql表名：</label>
-            <input type="text" name="tableName" id="tableName" value="{{old('tableName')}}" size="30">
-            <label for="rowNum">数据条数：</label>
-            <input type="text" name="rowNum" id="rowNum" value="{{old('rowNum')}}" size="10">
-            <label for="excelName">Excel表名：</label>
-            <input type="text" name="excelName" id="excelName" value="{{old('excelName')}}" size="30">
-            <input type="submit" value="submit">
-        </form>
-        @if(session('table') == 'notExists')
-            <div>表不存在^-^</div>
-        @endif
-    </div>
-</div>
-</body>
-</html>
+@stop
+
+@section('content')
+    <form id="getExcel" action="{{url('select/getExcel')}}" method="post">
+        @csrf
+        <div class="container select-form">
+            <div class="row">
+                <div class="col-md-5">
+                    <textarea name="sql">{{old('sql')}}</textarea>
+                </div>
+                <div class="col-md-2 select-btn">
+                    <input name="quantity" type="text" placeholder="数据条数">
+                    <input id="getExcel" class="btn btn-default btn-info" type="submit" value="Excel">
+                    <input id="getCode" class="btn btn-default btn-info" type="button" value="Code">
+                </div>
+                <div class="col-md-5">
+                    <textarea id="code">{{old('sql')}}</textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+    @if(session('table') == 'notExists')
+        <div>表不存在^-^</div>
+    @endif
+@stop
+
+@section('script')
+    <script type="text/javascript">
+        $("#getCode").click(function () {
+            $.ajax({
+                url: "{{url('select/getCode')}}",
+                type: "POST",
+                success: function (data) {
+                //    todo:
+                    alert(data);
+                }
+            });
+        });
+    </script>
+@stop

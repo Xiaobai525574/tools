@@ -12,64 +12,90 @@ namespace App\Http\Services;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class sqlExcelService extends Spreadsheet
 {
     /**
      * 根据表名数组获取包含个表sheet页的Excel
+     * @param $tplExcelNames
      * @return $this
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function getSqlExcel($sqlExcelNames)
+    public function getSqlExcel($tplExcelNames)
     {
         //Excel表格模板存放路径
         $this->removeSheetByIndex(0);
-        foreach ($sqlExcelNames as $key => $name) {
-            $sqlExcelPath = $this->getSqlEXcelPath($name);
-            if (Storage::disk('local')->exists($sqlExcelPath)) {
-                $sqlSheet = IOFactory::load($this->getAPath($sqlExcelPath))->getSheet(0);
-            } else {
-                $sqlSheet = new Worksheet(null, $name);
+        foreach ($tplExcelNames as $key => $name) {
+            $tplExcelPath = $this->getSqlEXcelPath($name);
+            $sqlSheet = new Worksheet(null, $name);
+            if (Storage::disk('local')->exists($tplExcelPath)) {
+                $tplSheet = IOFactory::load($this->getAPath($tplExcelPath))->getSheet(0);
+                $tplSheet = $tplSheet->toArray();
+                $tplSheet = $this->sortFirstRow($tplSheet);
+                $sqlSheet->fromArray($tplSheet);
             }
-            $this->addSheet($sqlSheet, $key);
+            $this->addSheet($sqlSheet);
         }
         return $this;
     }
 
     /**
-     * 对每个sheet页的首行数据进行唯一性整理
+     * 对每个sheet页添加数据
+     * @param $quantities
      * @return $this
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function sortFirstRow()
+    public function addData($quantities)
     {
-        $i = 0;
-        $j = 0;
         $sheets = $this->getAllSheets();
         foreach ($sheets as $key => $sheet) {
             $sheetArr = $sheet->toArray();
-            foreach ($sheetArr[1] as $k => &$cell) {
-                $length = mb_strlen($cell);
-                if ($length > 1) {
-                    $cell = $this->cellNumbered($cell, $i);
-                    $i++;
-                } elseif ($length == 1) {
-                    $cell = $j;
-                    $i = ($j >= 9) ? '0' : ($j + 1);
-                }
+            is_array($quantities) ? $quantitie = $quantities[$key] : $quantitie = $quantities;
+            for ($i = 1; $i < $quantitie; $i++) {
+                $this->addRow($sheetArr);
             }
             $sheet->fromArray($sheetArr);
         }
         return $this;
     }
 
-    public function addData()
+    /**
+     * 将所给字段在表格中逐行依次标红，最后一行中全部标红
+     * @param $redFields
+     * @return $this
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+    public function redData($redFields)
     {
+        $sharedStyle1 = new Style();
 
-        return $this;
-    }
-
-    public function colorData()
-    {
+        $sharedStyle1->applyFromArray(
+            [
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'color' => ['rgb' => config('tools.color.red')]
+                ]
+            ]
+        );
+        $sheets = $this->getAllSheets();
+        foreach ($sheets as $key => $sheet) {
+            $sheetArr = $sheet->toArray();
+            $row = 2;
+            $redAll = $row + count($redFields);
+            foreach ($sheetArr[0] as $key => $field) {
+                if (in_array($field, $redFields)) {
+                    $sheet->duplicateStyle($sharedStyle1, $this->decimalToABC($key) . $row);
+                    $sheet->duplicateStyle($sharedStyle1, $this->decimalToABC($key) . $redAll);
+                    $row++;
+                }
+            }
+        }
         return $this;
     }
 
@@ -80,7 +106,8 @@ class sqlExcelService extends Spreadsheet
      */
     public function saveSqlExcel($path)
     {
-        IOFactory::createWriter($this, ucfirst(config('tools.excel.type')))->save($this->getAPath($path));
+        $writer = IOFactory::createWriter($this, ucfirst(config('tools.excel.type')));
+        $writer->save($this->getAPath($path));
         return true;
     }
 
@@ -114,6 +141,70 @@ class sqlExcelService extends Spreadsheet
     {
         if ($cellNum === false) $cellNum = mb_substr($cellVal, 0, 2) + 1;
         return sprintf("%02d", $cellNum) . mb_substr($cellVal, 2);
+    }
+
+    /**
+     * 对sheet页数组的首行sql数据进行唯一性整理
+     * @param $sheet
+     * @return mixed
+     */
+    private function sortFirstRow($sheet)
+    {
+        $i = '0';
+        $j = '0';
+        if (key_exists(1, $sheet)) {
+            foreach ($sheet[1] as $k => &$cell) {
+                $length = mb_strlen($cell);
+                if ($length > 1) {
+                    $cell = $this->cellNumbered($cell, $i);
+                    $i++;
+                } elseif ($length == 1) {
+                    $cell = $j;
+                    $j = ($j >= 9) ? '0' : ($j + 1);
+                }
+            }
+        }
+        return $sheet;
+    }
+
+    /**
+     * 添加一行数据
+     * @param $sheetArr
+     */
+    private function addRow(&$sheetArr)
+    {
+        if (count($sheetArr) > 1) {
+            $lastRow = end($sheetArr);
+            $row = [];
+            foreach ($lastRow as $key => $val) {
+                $length = mb_strlen($val);
+                if ($length > 1) {
+                    $row[$key] = $this->cellNumbered($val);
+                } elseif ($length == 1) {
+                    $row[$key] = ($val >= 9) ? '0' : ($val + 1);
+                }
+            }
+            if ($row) array_push($sheetArr, $row);
+        }
+    }
+
+    /**
+     * 十进制转字符串
+     * @param $num
+     * @return string
+     */
+    private function decimalToABC($num)
+    {
+        $ABCstr = '';
+        $ten = $num;
+        if ($ten == 0) return 'A';
+        while ($ten != 0) {
+            $x = $ten % 26;
+            $ABCstr .= chr(65 + $x);
+            $ten = intval($ten / 26);
+        }
+
+        return strrev($ABCstr);
     }
 
 }

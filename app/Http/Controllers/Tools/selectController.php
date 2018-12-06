@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Tools;
 
+use App\Http\Services\sqlExcelService;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -22,12 +23,21 @@ class selectController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getExcel(Request $request)
+    public function getExcel(Request $request, sqlExcelService $sqlExcel)
     {
-        $savePath = config('tools.storage.selectPath') . $request->input('excelName') . '.xlsx';
-        $tablePath = config('tools.storage.tablesPath') . $request->input('tableName') . '.xlsx';;
-        $rowNum = $request->input('rowNum');
-        if (!$this->exportExcel($savePath, $tablePath, $rowNum)) return redirect()->back()->with('table', 'notExists')->withInput();
+        //处理sql字符串
+        $this->setSql($request->input('sql'));
+        //生成excel的保存路径
+        $savePath = config('tools.storage.selectPath') . 'setup_' . $this->getId() . '_001.xlsx';
+        //每张表需要生成的数据量
+        $quantity = $request->input('quantity') or $quantity = count($this->getWheres()) + 2;
+        //需要标红的单元格数组
+        $fields = array_column($this->getWheres(), 0);
+
+        $sqlExcel->getSqlExcel(array_column($this->getTables(), 0))
+            ->addData($quantity)
+            ->redData($fields)
+            ->saveSqlExcel($savePath);
 
         return Storage::download($savePath);
     }
