@@ -37,6 +37,13 @@
 <body>
 <div class="flex-center full-height">
     <div class="container">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li><a href="{{url('select/index')}}">单表Select</a></li>
+                <li><a href="{{url('select/getExcelByTables')}}">多表Select</a></li>
+                <li><a href="{{url('delete/index')}}">Delete</a></li>
+            </ul>
+        </nav>
         <div class="alert alert-info" role="alert">请手动将数据类型调整为文字列^-^</div>
         @yield('content', 'nothing')
     </div>
