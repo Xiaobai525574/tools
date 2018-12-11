@@ -79,7 +79,6 @@ class selectController extends Controller
         //需要表橙的单元格数组
         $orangeFields = $this->getSelects();
 
-
         $sqlExcel = resolve(sqlExcelService::class);
         $sqlExcel->getSqlExcel(array_column($this->getTables(), 0))
             ->getSheet(0)
@@ -96,3 +95,24 @@ class selectController extends Controller
     }
 
 }
+
+/**code is far away from bug with the animal protecting
+ *  ┏┓　　　┏┓
+ *┏┛┻━━━┛┻┓
+ *┃　　　　　　　┃ 　
+ *┃　　　━　　　┃
+ *┃　┳┛　┗┳　┃
+ *┃　　　　　　　┃
+ *┃　　　┻　　　┃
+ *┃　　　　　　　┃
+ *┗━┓　　　┏━┛
+ *　　┃　　　┃神兽保佑
+ *　　┃　　　┃代码无BUG！
+ *　　┃　　　┗━━━┓
+ *　　┃　　　　　　　┣┓
+ *　　┃　　　　　　　┏┛
+ *　　┗┓┓┏━┳┓┏┛
+ *　　　┃┫┫　┃┫┫
+ *　　　┗┻┛　┗┻┛
+ *　　　
+ */
