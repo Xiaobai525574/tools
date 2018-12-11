@@ -38,10 +38,12 @@ class deleteController extends Controller
         //需要标红的单元格数组
         $fields = array_column($this->getWheres(), 0);
 
-        $sqlExcel->getSqlExcel(array_column($this->getTables(), 0))
-            ->addData($quantity)
-            ->redData($fields)
-            ->saveSqlExcel($savePath);
+        $sqlExcel->getSqlExcel(array_column($this->getTables(), 0));
+        $sqlExcel->getSheet(0)
+            ->addRows($quantity - 1)
+            ->uniqueRows()
+            ->redData($fields);
+        $sqlExcel->saveSqlExcel($savePath);
 
         return Storage::download($savePath);
     }

@@ -6,11 +6,14 @@ return [
         'selectPath' => '\\public\\select\\'
     ],
     'excel' => [
-        'type' => 'xlsx'
+        /*Excel格式*/
+        'type' => 'xlsx',
+        /*sql数据在Excel中的起始行*/
+        'startRow' => 2
     ],
     'color' => [
         'red' => 'FF0000',
-        'orange' => '',
+        'orange' => 'ffc000',
         'yellow' => '',
     ]
 ];

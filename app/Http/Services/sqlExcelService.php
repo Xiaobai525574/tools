@@ -10,16 +10,17 @@ namespace App\Http\Services;
 
 
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Font;
-use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class sqlExcelService extends Spreadsheet
 {
+    /*当前操作行*/
+    private $currentRow = 2;
+
     /**
      * 根据表名数组获取包含个表sheet页的Excel
      * @param $tplExcelNames
@@ -32,16 +33,22 @@ class sqlExcelService extends Spreadsheet
         //Excel表格模板存放路径
         $this->removeSheetByIndex(0);
         foreach ($tplExcelNames as $key => $name) {
+            if (!$name) continue;
             $tplExcelPath = $this->getSqlEXcelPath($name);
-            $sqlSheet = new Worksheet(null, $name);
+            $sqlSheet = new sqlSheet(null, $name);
+            $this->addSheet($sqlSheet);
             if (Storage::disk('local')->exists($tplExcelPath)) {
                 $tplSheet = IOFactory::load($this->getAPath($tplExcelPath))->getSheet(0);
-                $tplSheet = $tplSheet->toArray();
-                $tplSheet = $this->sortFirstRow($tplSheet);
-                $sqlSheet->fromArray($tplSheet);
+                foreach ($tplSheet->getRowIterator() as $rowIndex => $row) {
+                    foreach ($row->getCellIterator() as $columnIndex => $cell) {
+                        $sqlSheet->setCellValue($columnIndex . $rowIndex, $cell->getValue())
+                            ->duplicateStyle($cell->getStyle(), $columnIndex . $rowIndex);
+                    }
+                }
             }
-            $this->addSheet($sqlSheet);
         }
+        if (!$this->getSheetCount()) $this->addSheet(new sqlSheet(null, 'sqlSheet'));
+
         return $this;
     }
 
@@ -51,16 +58,30 @@ class sqlExcelService extends Spreadsheet
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function addData($quantities)
+    public function createData($quantities)
     {
-        $sheets = $this->getAllSheets();
-        foreach ($sheets as $key => $sheet) {
-            $sheetArr = $sheet->toArray();
-            is_array($quantities) ? $quantitie = $quantities[$key] : $quantitie = $quantities;
-            for ($i = 1; $i < $quantitie; $i++) {
-                $this->addRow($sheetArr);
+        if (!$quantities) return $this;
+
+        if (is_array($quantities)) {
+            foreach ($this->getWorksheetIterator() as $key => $sheet) {
+                $sheet->addRows($quantities[$key] - 1);
             }
-            $sheet->fromArray($sheetArr);
+        } else {
+            foreach ($this->getWorksheetIterator() as $key => $sheet) {
+                $sheet->addRows($quantities - 1);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * 唯一化数据
+     * @return $this
+     */
+    public function uniqueRows()
+    {
+        foreach ($this->getWorksheetIterator() as $sheet) {
+            $sheet->uniqueRows();
         }
         return $this;
     }
@@ -71,30 +92,28 @@ class sqlExcelService extends Spreadsheet
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function redData($redFields)
+    public function redData($fields)
     {
-        $sharedStyle1 = new Style();
+        if (!$fields) return $this;
 
-        $sharedStyle1->applyFromArray(
-            [
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'color' => ['rgb' => config('tools.color.red')]
-                ]
-            ]
-        );
-        $sheets = $this->getAllSheets();
-        foreach ($sheets as $key => $sheet) {
-            $sheetArr = $sheet->toArray();
-            $row = 2;
-            $redAll = $row + count($redFields);
-            foreach ($sheetArr[0] as $key => $field) {
-                if (in_array($field, $redFields)) {
-                    $sheet->duplicateStyle($sharedStyle1, $this->decimalToABC($key) . $row);
-                    $sheet->duplicateStyle($sharedStyle1, $this->decimalToABC($key) . $redAll);
-                    $row++;
-                }
-            }
+        foreach ($this->getWorksheetIterator() as $sheetIndex => $sheet) {
+            $sheet->redData($fields[$sheetIndex]);
+        }
+        return $this;
+    }
+
+    /**
+     * 将所给字段在表格中标橙（标红的行除外）
+     * @param $fields
+     * @param null $row
+     * @return $this
+     */
+    public function orangeData($fields, $row = null)
+    {
+        if (!$fields) return $this;
+
+        foreach ($this->getWorksheetIterator() as $sheetIndex => $sheet) {
+            $sheet->orangeData($fields[$sheetIndex]);
         }
         return $this;
     }
@@ -131,80 +150,14 @@ class sqlExcelService extends Spreadsheet
         return config('filesystems.disks.local.root') . $path;
     }
 
-    /**
-     * 单元格数据进行编码，确保唯一性
-     * @param $cellVal
-     * @param bool $cellNum
-     * @return string
-     */
-    private function cellNumbered($cellVal, $cellNum = false)
+    public function getCurrentRow()
     {
-        if ($cellNum === false) $cellNum = mb_substr($cellVal, 0, 2) + 1;
-        return sprintf("%02d", $cellNum) . mb_substr($cellVal, 2);
+        return $this->currentRow;
     }
 
-    /**
-     * 对sheet页数组的首行sql数据进行唯一性整理
-     * @param $sheet
-     * @return mixed
-     */
-    private function sortFirstRow($sheet)
+    public function setCurrentRow($currentRow)
     {
-        $i = '0';
-        $j = '0';
-        if (key_exists(1, $sheet)) {
-            foreach ($sheet[1] as $k => &$cell) {
-                $length = mb_strlen($cell);
-                if ($length > 1) {
-                    $cell = $this->cellNumbered($cell, $i);
-                    $i++;
-                } elseif ($length == 1) {
-                    $cell = $j;
-                    $j = ($j >= 9) ? '0' : ($j + 1);
-                }
-            }
-        }
-        return $sheet;
-    }
-
-    /**
-     * 添加一行数据
-     * @param $sheetArr
-     */
-    private function addRow(&$sheetArr)
-    {
-        if (count($sheetArr) > 1) {
-            $lastRow = end($sheetArr);
-            $row = [];
-            foreach ($lastRow as $key => $val) {
-                $length = mb_strlen($val);
-                if ($length > 1) {
-                    $row[$key] = $this->cellNumbered($val);
-                } elseif ($length == 1) {
-                    $row[$key] = ($val >= 9) ? '0' : ($val + 1);
-                }
-            }
-            if ($row) array_push($sheetArr, $row);
-        }
-    }
-
-    /**
-     * 十进制转字符串
-     * @param $num
-     * @return string
-     */
-    private function decimalToABC($num)
-    {
-        $ABCstr = '';
-        $ten = $num;
-        if ($ten == 0) return 'A';
-        while ($ten != 0) {
-            $x = $ten % 26;
-            $ABCstr .= chr(65 + $x);
-            $ten = intval($ten / 26);
-        }
-
-        return strrev($ABCstr);
+        $this->currentRow = $currentRow;
     }
 
 }
