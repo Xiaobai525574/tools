@@ -1,7 +1,7 @@
 @extends('layouts.tools')
 
 @section('title')
-    Select
+    SelectTable
 @stop
 
 @section('css')
@@ -28,9 +28,18 @@
                     <textarea name="sql">{{old('sql')}}</textarea>
                 </div>
                 <div class="col-md-2 select-btn">
-                    <input name="quantity" type="text" placeholder="数据条数">
-                    <input id="getExcel" class="btn btn-default btn-info" type="submit" value="Excel">
-                    <input id="getCode" class="btn btn-default btn-info" type="button" value="Code">
+                    <input name="quantity" type="text" placeholder="数据条数（可选）">
+                    <input id="setupExcel001" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_001">
+                    <input id="setupExcel002" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_002">
+                    <input id="setupExcel003" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_003">
+                    <input id="setupExcel004" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_004">
+                    <input id="setupExcel005" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_005">
+                    <input id="setupExcel006" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_006">
+                    <input id="setupExcel007" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_007">
+                    <input id="setupExcel008" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_008">
+                    <input id="setupExcel009" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_009">
+                    <input id="setupExcel010" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_010">
+                    <input id="getCode" class="btn btn-default btn-warning" type="button" value="Code">
                 </div>
                 <div class="col-md-5">
                     <textarea id="code">{{old('sql')}}</textarea>
@@ -50,7 +59,7 @@
                 url: "{{url('select/getCode')}}",
                 type: "POST",
                 success: function (data) {
-                //    todo:
+                    //    todo:
                     alert(data);
                 }
             });

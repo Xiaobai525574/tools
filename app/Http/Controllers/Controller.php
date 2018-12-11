@@ -59,80 +59,91 @@ class Controller extends BaseController
         $sql = explode('--', strip_tags(strtolower($sql)))[0];
 
         /*解析sql内容*/
-        if ($sql) {
-            /*select*/
-            list($select, $sql) = explode('from', $sql);
-            if ($this->getSqlType() == 'select') {
-                $select = substr($select, 8);
-                $select = explode(',', str_replace(' ', '', $select));
-                $this->setSelect($select);
-            }
-
-            /*tables 分割多表、数据库名（"."分隔）、别名(空格分隔)*/
-            list($tables, $sql) = explode('where', $sql);
-            $tables = explode(',', $tables);
-            foreach ($tables as $key => $table) {
-                $tablesArr[] = explode(' ', explode('.', trim($table))[1]);
-            }
-            $this->setTables($tablesArr);
-
-            /*wheres*/
-            $wheres = explode('and', $sql);
-            foreach ($wheres as $value) {
-                $wheresArr[] = explode(' ', trim($value));
-            }
-            $this->setWheres($wheresArr);
+        /*selects*/
+        if (!$sql) return $this->getSql();
+        list($selects, $sql) = explode('from', $sql);
+        if ($this->getSqlType() == 'select') {
+            $selects = substr($selects, 8);
+            $selects = explode(',', str_replace(' ', '', $selects));
+            $this->setSelects($selects);
         }
+
+        /*tables 分割多表、数据库名（"."分隔）、别名(空格分隔)*/
+        if (!$sql) return $this->getSql();
+        list($tables, $sql) = explode('where', $sql);
+        $tables = explode(',', $tables);
+        foreach ($tables as $key => $table) {
+            $tablesArr[] = explode(' ', explode('.', trim($table))[1]);
+        }
+        $this->setTables($tablesArr);
+
+        /*wheres*/
+        if (!$sql) return $this->getSql();
+        $wheres = explode('and', $sql);
+        foreach ($wheres as $value) {
+            $wheresArr[] = explode(' ', trim($value));
+        }
+        $this->setWheres($wheresArr);
 
         return $this->getSql();
     }
 
-    protected function getId()
+    protected
+    function getId()
     {
         return $this->id;
     }
 
-    protected function setId($id)
+    protected
+    function setId($id)
     {
         $this->id = $id;
     }
 
-    protected function getSqlType()
+    protected
+    function getSqlType()
     {
         return $this->sqlType;
     }
 
-    protected function setSqlType($sqlType)
+    protected
+    function setSqlType($sqlType)
     {
         $this->sqlType = $sqlType;
     }
 
-    protected function getSelect()
+    protected
+    function getSelects()
     {
-        return $this->select;
+        return $this->selects;
     }
 
-    protected function setSelect($select)
+    protected
+    function setSelects($selects)
     {
-        $this->select = $select;
+        $this->selects = $selects;
     }
 
-    protected function getTables()
+    protected
+    function getTables()
     {
         return $this->tables;
     }
 
-    protected function setTables($tables)
+    protected
+    function setTables($tables)
     {
         $this->tables = $tables;
     }
 
-    protected function getWheres()
+    protected
+    function getWheres()
     {
         return $this->wheres;
     }
 
-    protected function setWheres($wheres)
+    protected
+    function setWheres($wheres)
     {
         $this->wheres = $wheres;
     }
