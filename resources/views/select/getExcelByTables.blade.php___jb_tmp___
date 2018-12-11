@@ -69,30 +69,30 @@
             </div>
         </div>
         <div class="row select-row select-submit">
-                <div class="col-md-2">
-                    <input id="setupExcel007" class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_007">
-                </div>
-                <div class="col-md-2">
-                    <input id="setupExcel008" class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_008">
-                </div>
-                <div class="col-md-2">
-                    <input id="setupExcel009" class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_009">
-                </div>
-                <div class="col-md-2">
-                    <input id="setupExcel010" class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_010">
-                </div>
-                <div class="col-md-2">
-                    <input id="setupExcel011" class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_011">
-                </div>
-                <div class="col-md-2">
-                    <input id="setupExcel012" class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_012">
-                </div>
+            <div class="col-md-2">
+                <input id="setupExcel007" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_007">
+            </div>
+            <div class="col-md-2">
+                <input id="setupExcel008" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_008">
+            </div>
+            <div class="col-md-2">
+                <input id="setupExcel009" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_009">
+            </div>
+            <div class="col-md-2">
+                <input id="setupExcel010" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_010">
+            </div>
+            <div class="col-md-2">
+                <input id="setupExcel011" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_011">
+            </div>
+            <div class="col-md-2">
+                <input id="setupExcel012" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_012">
+            </div>
         </div>
     </form>
 @stop

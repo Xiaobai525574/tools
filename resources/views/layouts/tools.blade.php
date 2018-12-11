@@ -13,40 +13,28 @@
     <link href="{{url('/bootstrap-3.3.7-dist/css/bootstrap.css')}}" rel="stylesheet">
     <style>
         html, body {
-            background-color: #fff;
-            color: #636b6f;
             font-family: 'Raleway', sans-serif;
-            font-weight: 100;
-            height: 100vh;
-            margin: 0;
         }
 
-        .full-height {
-            height: 100vh;
+        .container {
+            margin-top: 60px;
         }
 
-        .flex-center {
-            align-items: center;
-            display: flex;
-            justify-content: center;
-        }
     </style>
     @section('css')
     @show
 </head>
 <body>
-<div class="flex-center full-height">
-    <div class="container">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                <li><a href="{{url('select/index')}}">单表Select</a></li>
-                <li><a href="{{url('select/getExcelByTables')}}">多表Select</a></li>
-                <li><a href="{{url('delete/index')}}">Delete</a></li>
-            </ul>
-        </nav>
-        <div class="alert alert-info" role="alert">请手动将数据类型调整为文字列^-^</div>
-        @yield('content', 'nothing')
-    </div>
+<div class="container">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li><a href="{{url('select/index')}}">单表Select</a></li>
+            <li><a href="{{url('select/getExcelByTables')}}">多表Select</a></li>
+            <li><a href="{{url('delete/index')}}">Delete</a></li>
+        </ul>
+    </nav>
+    <div class="alert alert-info" role="alert">请手动将数据类型调整为文字列^-^</div>
+    @yield('content', 'nothing')
 </div>
 <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
 <script src="{{url('/js/jquery-3.3.1.min.js')}}"></script>
