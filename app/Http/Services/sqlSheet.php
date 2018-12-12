@@ -31,7 +31,7 @@ class sqlSheet extends Worksheet
     {
         if (!$this->cellExistsByColumnAndRow(1, 2)) return $this;
         $fieldsIndexes = [];
-        $i = '0';
+        $i = '10';
         $j = '0';
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
             /*列宽自适应不好用，辣鸡*/
