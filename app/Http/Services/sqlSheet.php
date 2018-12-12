@@ -34,7 +34,8 @@ class sqlSheet extends Worksheet
         $i = '0';
         $j = '0';
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
-            $this->getColumnDimension($columnIndex)->setAutoSize(true);
+            /*列宽自适应不好用，辣鸡*/
+            //$this->getColumnDimension($columnIndex)->setAutoSize(true);
             $len = strlen($this->getCell($columnIndex . 2)->getFormattedValue());
             if ($len > 1) {
                 $fieldsIndexes[$columnIndex] = ['characters', $i];
