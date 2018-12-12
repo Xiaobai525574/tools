@@ -23,17 +23,18 @@ class sqlSheet extends Worksheet
     private $currentRow = 2;
 
     /**
-     * 初始化数据标志位（长度为1的字段和长度大于1的字段用两个计数器去标志）
+     * 初始化列：列宽、数据标志位（长度为1的字段和长度大于1的字段用两个计数器去标志）
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function initFieldsIndexes()
+    public function initColumns()
     {
         if (!$this->cellExistsByColumnAndRow(1, 2)) return $this;
         $fieldsIndexes = [];
         $i = '0';
         $j = '0';
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
+            $this->getColumnDimension($columnIndex)->setAutoSize(true);
             $len = strlen($this->getCell($columnIndex . 2)->getFormattedValue());
             if ($len > 1) {
                 $fieldsIndexes[$columnIndex] = ['characters', $i];
@@ -89,7 +90,7 @@ class sqlSheet extends Worksheet
      */
     public function uniqueRows()
     {
-        if (!$this->getFieldsIndexes()) $this->initFieldsIndexes();
+        if (!$this->getFieldsIndexes()) $this->initColumns();
         foreach ($this->getRowIterator(config('tools.excel.startRow')) as $rowIndex => $row) {
             foreach ($row->getCellIterator() as $columnIndex => $cell) {
                 $fieldIndex = $this->getFieldsIndexes()[$columnIndex];

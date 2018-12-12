@@ -27,18 +27,30 @@ class selectController extends Controller
     {
         //处理sql字符串
         $this->setSql($request->input('sql'));
+        if (count($this->getTables()) > 1) return false;
+
         //每张表需要生成的数据量
         $rows = $request->input('quantity');
+        if (!$rows) $rows = count($this->getWheres()) + 2;
+
         //生成excel的保存路径
         $savePath = config('tools.storage.selectPath')
             . str_replace('**', $this->getId(), $request->input('excelName')) . '.'
             . config('tools.excel.type');
 
-        if (count($this->getTables()) > 1) {
-            $this->saveTablesExcel($savePath, $rows);
-        } else {
-            $this->saveTableExcel($savePath, $rows);
-        }
+        //需要标红的单元格数组
+        $redFields = array_column($this->getWheres(), 0);
+        //需要标橙的单元格数组
+        $orangeFields = $this->getSelects();
+
+        $sqlExcel = resolve(sqlExcelService::class);
+        $sqlExcel->getSqlExcel(array_column($this->getTables(), 0))
+            ->getSheet(0)
+            ->addRows($rows - 1)
+            ->uniqueRows()
+            ->redData($redFields)
+            ->orangeData($orangeFields);
+        $sqlExcel->saveSqlExcel($savePath);
 
         return Storage::download($savePath);
     }
@@ -69,29 +81,6 @@ class selectController extends Controller
         $sqlExcel->saveSqlExcel($savePath);
 
         return Storage::download($savePath);
-    }
-
-    public function saveTableExcel($savePath, $rows = null)
-    {
-        if (!$rows) $rows = count($this->getWheres()) + 2;
-        //需要标红的单元格数组
-        $redFields = array_column($this->getWheres(), 0);
-        //需要表橙的单元格数组
-        $orangeFields = $this->getSelects();
-
-        $sqlExcel = resolve(sqlExcelService::class);
-        $sqlExcel->getSqlExcel(array_column($this->getTables(), 0))
-            ->getSheet(0)
-            ->addRows($rows - 1)
-            ->uniqueRows()
-            ->redData($redFields)
-            ->orangeData($orangeFields);
-        $sqlExcel->saveSqlExcel($savePath);
-    }
-
-    public function saveTablesExcel()
-    {
-
     }
 
 }

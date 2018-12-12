@@ -19,6 +19,15 @@
 @section('content')
     <form id="getExcel" method="post">
         @csrf
+        <div class="row select-row">
+            <div class="col-md-3">
+                <input id="addTable" class="btn btn-default btn-warning" type="button" value="Add Table">
+                <input id="removeTable" class="btn btn-default btn-warning" type="button" value="Remove Table">
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" name="id" placeholder="id（替换**）">
+            </div>
+        </div>
         <div class="row select-row select-table">
             <div class="col-md-3">
                 <input class="form-control" name="tableNames[]" placeholder="表名">
@@ -31,15 +40,6 @@
             </div>
             <div class="col-md-3">
                 <input class="col-md-6 form-control" name="tableSelects[]" placeholder="select条件（标橙，用逗号分隔）">
-            </div>
-        </div>
-        <div class="row select-row">
-            <div class="col-md-3">
-                <input id="addTable" class="btn btn-default btn-warning" type="button" value="Add Table">
-                <input id="removeTable" class="btn btn-default btn-warning" type="button" value="Remove Table">
-            </div>
-            <div class="col-md-2">
-                <input class="form-control" name="id" placeholder="id（替换**）">
             </div>
         </div>
         <div class="row select-row select-submit">

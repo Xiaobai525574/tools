@@ -72,18 +72,18 @@ class Controller extends BaseController
         if (!$sql) return $this->getSql();
         list($tables, $sql) = explode('where', $sql);
         $tables = explode(',', $tables);
-        foreach ($tables as $key => $table) {
-            $tablesArr[] = explode(' ', explode('.', trim($table))[1]);
+        foreach ($tables as $key => &$table) {
+            $table = explode(' ', explode('.', trim($table))[1]);
         }
-        $this->setTables($tablesArr);
+        $this->setTables($tables);
 
         /*wheres*/
         if (!$sql) return $this->getSql();
         $wheres = explode('and', $sql);
-        foreach ($wheres as $value) {
-            $wheresArr[] = explode(' ', trim($value));
+        foreach ($wheres as $where) {
+            $wheres[] = explode(' ', trim($where));
         }
-        $this->setWheres($wheresArr);
+        $this->setWheres($wheres);
 
         return $this->getSql();
     }
