@@ -10,6 +10,7 @@ namespace App\Http\Services;
 
 
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -35,7 +36,7 @@ class sqlSheet extends Worksheet
         $j = '0';
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
             /*列宽自适应不好用，辣鸡*/
-            //$this->getColumnDimension($columnIndex)->setAutoSize(true);
+            $this->getColumnDimension($columnIndex)->setAutoSize(true);
             $len = strlen($this->getCell($columnIndex . 2)->getFormattedValue());
             if ($len > 1) {
                 $fieldsIndexes[$columnIndex] = ['characters', $i];
@@ -97,7 +98,9 @@ class sqlSheet extends Worksheet
                 $fieldIndex = $this->getFieldsIndexes()[$columnIndex];
                 $num = $fieldIndex[1] + $rowIndex - config('tools.excel.startRow');
                 if ($fieldIndex[0] == 'character') $num = $num % 10;
-                $this->setCellValue($columnIndex . $rowIndex, $this->mergeStr($cell->getValue(), $num))
+                $this->setCellValueExplicit($columnIndex . $rowIndex
+                    , $this->mergeStr($cell->getValue(), $num)
+                    , DataType::TYPE_STRING)
                     ->duplicateStyle($this->getStyle($columnIndex . 2), $columnIndex . $rowIndex);
             }
         }
@@ -135,8 +138,9 @@ class sqlSheet extends Worksheet
                     if ($rowIndex == $row || $rowIndex == $highestRow) {
                         $this->duplicateStyle($style, $columnIndex . $rowIndex);
                     } else {
-                        $this->setCellValue($columnIndex . $rowIndex
-                            , $this->getCell($columnIndex . ($highestRow + 1))->getValue());
+                        $this->setCellValueExplicit($columnIndex . $rowIndex
+                            , $this->getCell($columnIndex . ($highestRow + 1))->getValue()
+                            , DataType::TYPE_STRING);
                     }
                 }
                 $row++;
