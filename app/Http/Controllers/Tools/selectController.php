@@ -69,16 +69,22 @@ class selectController extends Controller
         $sqlExcel->getSqlExcel($request->input('tableNames'));
         if ($sqlExcel->getSheetNames()[0] != 'sqlSheet') {
             foreach ($sqlExcel->getWorksheetIterator() as $key => $sheet) {
-                $selectFields[$key] = array_column($this->parseSelects($selectFields[$key]), 1);
-                if (strpos($whereFields[$key], '=') !== false) {
-                    $whereFields[$key] = array_column(array_column($this->parseWheres($whereFields[$key]), 0), 1);
-                } else {
-                    $whereFields[$key] = explode(',', str_replace(' ', '', $whereFields[$key]));
-                }
                 $sheet->addRows($rows[$key] - 1)
-                    ->uniqueRows()
-                    ->redData($whereFields[$key])
-                    ->orangeData($selectFields[$key]);
+                    ->uniqueRows();
+
+                if ($selectFields[$key]) {
+                    $selectFields[$key] = array_column($this->parseSelects($selectFields[$key]), 1);
+                    $sheet->orangeData($selectFields[$key]);
+                }
+
+                if ($whereFields[$key]) {
+                    if (strpos($whereFields[$key], '=') !== false) {
+                        $whereFields[$key] = array_column(array_column($this->parseWheres($whereFields[$key]), 0), 1);
+                    } else {
+                        $whereFields[$key] = explode(',', str_replace(' ', '', $whereFields[$key]));
+                    }
+                    $sheet->redData($whereFields[$key]);
+                }
             }
             $sqlExcel->setActiveSheetIndex(0);
         }
