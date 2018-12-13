@@ -49,7 +49,8 @@ class selectController extends Controller
             ->addRows($rows - 1)
             ->uniqueRows()
             ->redData($redFields)
-            ->orangeData($orangeFields);
+            ->orangeData($orangeFields)
+            ->setSelectedCell('A1');
         $sqlExcel->saveSqlExcel($savePath);
 
         return Storage::download($savePath);
@@ -72,11 +73,6 @@ class selectController extends Controller
                 $sheet->addRows($rows[$key] - 1)
                     ->uniqueRows();
 
-                if ($selectFields[$key]) {
-                    $selectFields[$key] = array_column($this->parseSelects($selectFields[$key]), 1);
-                    $sheet->orangeData($selectFields[$key]);
-                }
-
                 if ($whereFields[$key]) {
                     if (strpos($whereFields[$key], '=') !== false) {
                         $whereFields[$key] = array_column(array_column($this->parseWheres($whereFields[$key]), 0), 1);
@@ -85,6 +81,13 @@ class selectController extends Controller
                     }
                     $sheet->redData($whereFields[$key]);
                 }
+
+                if ($selectFields[$key]) {
+                    $selectFields[$key] = array_column($this->parseSelects($selectFields[$key]), 1);
+                    $sheet->orangeData($selectFields[$key]);
+                }
+
+                $sheet->setSelectedCell('A1');
             }
             $sqlExcel->setActiveSheetIndex(0);
         }

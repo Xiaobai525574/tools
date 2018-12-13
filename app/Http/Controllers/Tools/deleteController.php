@@ -42,7 +42,8 @@ class deleteController extends Controller
         $sqlExcel->getSheet(0)
             ->addRows($quantity - 1)
             ->uniqueRows()
-            ->redData($fields);
+            ->redData($fields)
+            ->setSelectedCell('A1');
         $sqlExcel->saveSqlExcel($savePath);
 
         return Storage::download($savePath);

@@ -16,6 +16,7 @@ Route::get('/phpinfo', function () {
 });
 
 Route::get('/', 'Tools\\toolsController@index');
+Route::get('/updateInfo', 'Tools\\toolsController@updateInfo');
 
 Route::prefix('/delete')->group(function () {
     Route::get('/index', 'Tools\\deleteController@index');

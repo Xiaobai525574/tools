@@ -15,6 +15,11 @@ class toolsController extends Controller
         return view('tools/index');
     }
 
+    public function updateInfo()
+    {
+        return view('tools/updateInfo');
+    }
+
 }
 
 /**

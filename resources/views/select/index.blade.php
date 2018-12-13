@@ -40,14 +40,6 @@
                        value="setup_**_005">
                 <input id="setupExcel006" class="btn btn-default btn-info" type="submit" name="excelName"
                        value="setup_**_006">
-                <input id="setupExcel007" class="btn btn-default btn-info" type="submit" name="excelName"
-                       value="setup_**_007">
-                <input id="setupExcel008" class="btn btn-default btn-info" type="submit" name="excelName"
-                       value="setup_**_008">
-                <input id="setupExcel009" class="btn btn-default btn-info" type="submit" name="excelName"
-                       value="setup_**_009">
-                <input id="setupExcel010" class="btn btn-default btn-info" type="submit" name="excelName"
-                       value="setup_**_010">
                 <input id="getCode" class="btn btn-default btn-warning" type="button" value="Code">
             </div>
             <div class="col-md-5">
