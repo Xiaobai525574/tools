@@ -55,15 +55,23 @@ class Controller extends BaseController
         /*解析xml标签里的id*/
         $this->setId(substr($sql, 12, 12));
 
-        /*解析sql字符串（转小写、去除xml标签、去除sql注释）*/
-        $sql = explode('--', strip_tags(strtolower($sql)))[0];
+        /*解析sql字符串（转小写、去除xml标签、去除sql注释、去除多余字符）*/
+        $sql = strip_tags(strtolower($sql));
+        $strpos = strpos($sql, 'for update');
+        if ($strpos !== false) {
+            $sql = substr($sql, 0, $strpos);
+        } else {
+            $strpos = strpos($sql, '--');
+            if ($strpos !== false) $sql = substr($sql, 0, $strpos);
+        }
+        $sql = trim($sql);
 
         /*解析sql内容*/
         /*selects*/
         if (!$sql) return $this->getSql();
         list($selects, $sql) = explode('from', $sql);
         if ($this->getSqlType() == 'select') {
-            $selects = substr($selects, 8);
+            $selects = substr($selects, 7);
             $selects = explode(',', str_replace(' ', '', $selects));
             $this->setSelects($selects);
         }
@@ -80,8 +88,8 @@ class Controller extends BaseController
         /*wheres*/
         if (!$sql) return $this->getSql();
         $wheres = explode('and', $sql);
-        foreach ($wheres as $where) {
-            $wheres[] = explode(' ', trim($where));
+        foreach ($wheres as &$where) {
+            $where = explode(' ', trim($where));
         }
         $this->setWheres($wheres);
 
