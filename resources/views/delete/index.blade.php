@@ -20,21 +20,19 @@
 @stop
 
 @section('content')
-    <form id="getExcel" action="{{url('delete/getExcel')}}" method="post">
+    <form id="getExcel" class="delete-form" action="{{url('delete/getExcel')}}" method="post">
         @csrf
-        <div class="container delete-form">
-            <div class="row">
-                <div class="col-md-5">
-                    <textarea name="sql">{{old('sql')}}</textarea>
-                </div>
-                <div class="col-md-2 delete-btn">
-                    <input name="quantity" type="text" placeholder="数据条数（可选）">
-                    <input id="getExcel" class="btn btn-default btn-info" type="submit" value="Excel">
-                    <input id="getCode" class="btn btn-default btn-info" type="button" value="Code">
-                </div>
-                <div class="col-md-5">
-                    <textarea id="code">{{old('sql')}}</textarea>
-                </div>
+        <div class="row">
+            <div class="col-md-5">
+                <textarea class="form-control" name="sql">{{old('sql')}}</textarea>
+            </div>
+            <div class="col-md-2 delete-btn">
+                <input name="quantity" type="text" placeholder="数据条数（可选）">
+                <input id="getExcel" class="btn btn-default btn-info" type="submit" value="Excel">
+                <input id="getCode" class="btn btn-default btn-info" type="button" value="Code">
+            </div>
+            <div class="col-md-5">
+                <textarea class="form-control" id="code">{{old('sql')}}</textarea>
             </div>
         </div>
     </form>
@@ -50,7 +48,7 @@
                 url: "{{url('delete/getCode')}}",
                 type: "POST",
                 success: function (data) {
-                //    todo:
+                    //    todo:
                     alert(data);
                 }
             });

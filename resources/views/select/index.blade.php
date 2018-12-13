@@ -20,30 +20,38 @@
 @stop
 
 @section('content')
-    <form id="getExcel" action="{{url('select/getExcel')}}" method="post">
+    <form id="getExcel" class="select-form" action="{{url('select/getExcel')}}" method="post">
         @csrf
-        <div class="container select-form">
-            <div class="row">
-                <div class="col-md-5">
-                    <textarea name="sql">{{old('sql')}}</textarea>
-                </div>
-                <div class="col-md-2 select-btn">
-                    <input name="quantity" type="text" placeholder="数据条数（可选）">
-                    <input id="setupExcel001" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_001">
-                    <input id="setupExcel002" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_002">
-                    <input id="setupExcel003" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_003">
-                    <input id="setupExcel004" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_004">
-                    <input id="setupExcel005" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_005">
-                    <input id="setupExcel006" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_006">
-                    <input id="setupExcel007" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_007">
-                    <input id="setupExcel008" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_008">
-                    <input id="setupExcel009" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_009">
-                    <input id="setupExcel010" class="btn btn-default btn-info" type="submit" name="excelName" value="setup_**_010">
-                    <input id="getCode" class="btn btn-default btn-warning" type="button" value="Code">
-                </div>
-                <div class="col-md-5">
-                    <textarea id="code">{{old('sql')}}</textarea>
-                </div>
+        <div class="row">
+            <div class="col-md-5">
+                <textarea class="form-control" name="sql">{{old('sql')}}</textarea>
+            </div>
+            <div class="col-md-2 select-btn">
+                <input name="quantity" type="text" placeholder="数据条数（可选）">
+                <input id="setupExcel001" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_001">
+                <input id="setupExcel002" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_002">
+                <input id="setupExcel003" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_003">
+                <input id="setupExcel004" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_004">
+                <input id="setupExcel005" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_005">
+                <input id="setupExcel006" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_006">
+                <input id="setupExcel007" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_007">
+                <input id="setupExcel008" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_008">
+                <input id="setupExcel009" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_009">
+                <input id="setupExcel010" class="btn btn-default btn-info" type="submit" name="excelName"
+                       value="setup_**_010">
+                <input id="getCode" class="btn btn-default btn-warning" type="button" value="Code">
+            </div>
+            <div class="col-md-5">
+                <textarea class="form-control" id="code">{{old('sql')}}</textarea>
             </div>
         </div>
     </form>
