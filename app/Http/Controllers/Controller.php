@@ -65,95 +65,159 @@ class Controller extends BaseController
             if ($strpos !== false) $sql = substr($sql, 0, $strpos);
         }
         $sql = trim($sql);
+        if (!$sql) return $this->getSql();
 
         /*解析sql内容*/
         /*selects*/
-        if (!$sql) return $this->getSql();
         list($selects, $sql) = explode('from', $sql);
+        $selects = substr($selects, 7);
         if ($this->getSqlType() == 'select') {
-            $selects = substr($selects, 7);
-            $selects = explode(',', str_replace(' ', '', $selects));
-            $this->setSelects($selects);
+            $this->parseSelects($selects);
         }
+        if (!$sql) return $this->getSql();
 
         /*tables 分割多表、数据库名（"."分隔）、别名(空格分隔)*/
-        if (!$sql) return $this->getSql();
         list($tables, $sql) = explode('where', $sql);
-        $tables = explode(',', $tables);
+        $this->parseTables($tables);
+        if (!$sql) return $this->getSql();
+
+        /*wheres*/
+        $this->parseWheres($sql);
+
+        return $this->getSql();
+    }
+
+    protected function parseSelects($sql)
+    {
+        if (!$sql) return $sql;
+
+        /*去除换行符*/
+        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', strtolower($sql));
+        /*去除多余空格*/
+        $sql = trim(preg_replace("/[\s]+/is", ' ', $sql));
+        $selects = explode(',', str_replace(' ', '', $sql));
+        /*解析别名*/
+        foreach ($selects as $key => &$select) {
+            if (strpos($select, '.') !== false) {
+                $select = explode('.', $select);
+            } else {
+                $select = ['', $select];
+            }
+        }
+        $this->setSelects($selects);
+
+        return $selects;
+    }
+
+    protected function parseTables($sql)
+    {
+        if (!$sql) return $sql;
+
+        /*去除换行符*/
+        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', strtolower($sql));
+        /*去除多余空格*/
+        $sql = trim(preg_replace("/[\s]+/is", ' ', $sql));
+        $tables = explode(',', $sql);
         foreach ($tables as $key => &$table) {
             $table = explode(' ', explode('.', trim($table))[1]);
         }
         $this->setTables($tables);
 
-        /*wheres*/
-        if (!$sql) return $this->getSql();
-        $wheres = explode('and', $sql);
-        foreach ($wheres as &$where) {
-            $where = explode(' ', trim($where));
-        }
-        $this->setWheres($wheres);
-
-        return $this->getSql();
+        return $tables;
     }
 
-    protected
-    function getId()
+    protected function parseWheres($sql)
+    {
+        if (!$sql) return $sql;
+
+        /*去除换行符*/
+        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', strtolower($sql));
+        /*去除多余空格*/
+        $sql = trim(preg_replace("/[\s]+/is", ' ', $sql));
+        $wheres = explode('and', $sql);
+        /*解析别名*/
+        foreach ($wheres as &$where) {
+            $where = explode(' ', trim($where));
+            if (strpos($where[0], '.') !== false) {
+                $where[0] = explode('.', $where[0]);
+            } else {
+                $where[0] = ['', $where[0]];
+            }
+        }
+        $this->setWheres($wheres);
+        return $wheres;
+    }
+
+    protected function getId()
     {
         return $this->id;
     }
 
-    protected
-    function setId($id)
+    protected function setId($id)
     {
         $this->id = $id;
     }
 
-    protected
-    function getSqlType()
+    protected function getSqlType()
     {
         return $this->sqlType;
     }
 
-    protected
-    function setSqlType($sqlType)
+    protected function setSqlType($sqlType)
     {
         $this->sqlType = $sqlType;
     }
 
-    protected
-    function getSelects()
+    protected function getSelects()
     {
         return $this->selects;
     }
 
-    protected
-    function setSelects($selects)
+    protected function setSelects($selects)
     {
         $this->selects = $selects;
     }
 
-    protected
-    function getTables()
+    protected function getTables()
     {
         return $this->tables;
     }
 
-    protected
-    function setTables($tables)
+    protected function setTables($tables)
     {
         $this->tables = $tables;
     }
 
-    protected
-    function getWheres()
+    protected function getWheres()
     {
         return $this->wheres;
     }
 
-    protected
-    function setWheres($wheres)
+    protected function setWheres($wheres)
     {
         $this->wheres = $wheres;
     }
 
 }
+
+/**
+ *                       .::::.
+ *                     .::::::::.
+ *                    :::::::::::
+ *                 ..:::::::::::'
+ *              '::::::::::::'
+ *                .::::::::::
+ *           '::::::::::::::..
+ *                ..::::::::::::.
+ *              ``::::::::::::::::
+ *               ::::``:::::::::'        .:::.
+ *              ::::'   ':::::'       .::::::::.
+ *            .::::'      ::::     .:::::::'::::.
+ *           .:::'       :::::  .:::::::::' ':::::.
+ *          .::'        :::::.:::::::::'      ':::::.
+ *         .::'         ::::::::::::::'         ``::::.
+ *     ...:::           ::::::::::::'              ``::.
+ *    ```` ':.          ':::::::::'                  ::::..
+ *                       '.:::::'                    ':'````..
+ *
+ */

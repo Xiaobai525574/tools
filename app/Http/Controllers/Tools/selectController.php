@@ -39,9 +39,9 @@ class selectController extends Controller
             . config('tools.excel.type');
 
         //需要标红的单元格数组
-        $redFields = array_column($this->getWheres(), 0);
+        $redFields = array_column(array_column($this->getWheres(), 0), 1);
         //需要标橙的单元格数组
-        $orangeFields = $this->getSelects();
+        $orangeFields = array_column($this->getSelects(), 1);
 
         $sqlExcel = resolve(sqlExcelService::class);
         $sqlExcel->getSqlExcel(array_column($this->getTables(), 0))
@@ -69,8 +69,12 @@ class selectController extends Controller
         $sqlExcel->getSqlExcel($request->input('tableNames'));
         if ($sqlExcel->getSheetNames()[0] != 'sqlSheet') {
             foreach ($sqlExcel->getWorksheetIterator() as $key => $sheet) {
-                if ($whereFields[$key]) $whereFields[$key] = explode(',', $whereFields[$key]);
-                if ($selectFields[$key]) $selectFields[$key] = explode(',', $selectFields[$key]);
+                $selectFields[$key] = array_column($this->parseSelects($selectFields[$key]), 1);
+                if (strpos($whereFields[$key], '=') !== false) {
+                    $whereFields[$key] = array_column(array_column($this->parseWheres($whereFields[$key]), 0), 1);
+                } else {
+                    $whereFields[$key] = explode(',', str_replace(' ', '', $whereFields[$key]));
+                }
                 $sheet->addRows($rows[$key] - 1)
                     ->uniqueRows()
                     ->redData($whereFields[$key])

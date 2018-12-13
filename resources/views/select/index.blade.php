@@ -24,10 +24,10 @@
         @csrf
         <div class="row">
             <div class="col-md-5">
-                <textarea class="form-control" name="sql">{{old('sql')}}</textarea>
+                <textarea class="form-control" name="sql" placeholder="不支持order by、group by、表别名、if/foreache等条件（可把相关代码删除，然后自定义数据条数）">{{old('sql')}}</textarea>
             </div>
             <div class="col-md-2 select-btn">
-                <input name="quantity" type="text" placeholder="数据条数（可选）">
+                <input class="form-control" name="quantity" type="text" placeholder="数据条数（可选）">
                 <input id="setupExcel001" class="btn btn-default btn-info" type="submit" name="excelName"
                        value="setup_**_001">
                 <input id="setupExcel002" class="btn btn-default btn-info" type="submit" name="excelName"
