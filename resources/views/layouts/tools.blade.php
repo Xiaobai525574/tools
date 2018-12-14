@@ -34,7 +34,7 @@
             <li><a href="{{url('updateInfo')}}">更新日志</a></li>
         </ul>
     </nav>
-    <div class="alert alert-info" role="alert">提示：被标记颜色的单元格会变成标准类型，请手动格式化为文字列类型^-^</div>
+    <div class="alert alert-info" role="alert">广播：被标记颜色的单元格会变成标准类型，请手动格式化为文字列类型^-^</div>
     @yield('content', 'nothing')
 </div>
 <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->

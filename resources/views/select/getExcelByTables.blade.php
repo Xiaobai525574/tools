@@ -31,14 +31,14 @@
             <div class="panel-body">
                 <pre>
                 标橙支持输入方式：
-                    1、逗号分隔(有无空格、换行、表别名都没关系):
+                    1、逗号分隔(有无空格、换行、表别名、重复字段都没关系):
                     "t1.bnk_cod
                     ,t1.dup_sfp_cen_jho_id
                     ,t1.tyo_kis_hi"
                 标红支持输入方式：
                     1、逗号分隔(有无空格都没关系，不支持换行、表别名):
                     "bnk_cod,    skj_flg"
-                    2、xml文件直接复制代码（有无空格、换行、表别名都没关系，但字段名（例：t3.bnk_cod）必须在"="左边）:
+                    2、xml文件直接复制代码（有无空格、换行、表别名、重复字段都没关系，<span class="text-danger">但字段名（例：t3.bnk_cod）必须在"="左边）</span>:
                     "t3.bnk_cod = #{bankCd,jdbcType=CHAR}
                     AND t3.skj_flg = #{sakujoFlg,jdbcType=NUMERIC}"
                 </pre>

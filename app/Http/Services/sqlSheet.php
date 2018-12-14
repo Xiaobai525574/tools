@@ -118,7 +118,9 @@ class sqlSheet extends Worksheet
     public function redData($fields, $row = null)
     {
         if (!$fields) return $this;
+        $fields = array_unique($fields);
         if (!$row) $row = $this->getCurrentRow();
+        $highestRow = $row + count($fields);
         $style = new Style();
         $style->applyFromArray([
             'fill' => [
@@ -130,7 +132,6 @@ class sqlSheet extends Worksheet
             ]
         ]);
 
-        $highestRow = $row + count($fields);
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
             $fieldName = $this->getCell($columnIndex . 1)->getValue();
             if (in_array($fieldName, $fields)) {
@@ -161,7 +162,9 @@ class sqlSheet extends Worksheet
     public function orangeData($fields, $row = null)
     {
         if (!$fields) return $this;
+        $fields = array_unique($fields);
         if (!$row) $row = $this->getCurrentRow();
+        $highestRow = $this->getHighestRow();
         $style = new Style();
         $style->applyFromArray([
             'fill' => [
@@ -172,7 +175,6 @@ class sqlSheet extends Worksheet
                 'name' => 'ＭＳ Ｐゴシック'
             ]
         ]);
-        $highestRow = $this->getHighestRow();
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
             $fieldName = $this->getCell($columnIndex . 1)->getValue();
             if (in_array($fieldName, $fields)) {
