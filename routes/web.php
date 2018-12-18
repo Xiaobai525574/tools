@@ -29,5 +29,7 @@ Route::prefix('/select')->group(function () {
     Route::get('/index', 'Tools\\selectController@index');
     Route::post('/getExcel', 'Tools\\selectController@getExcel');
     Route::any('/getExcelByTables', 'Tools\\selectController@getExcelByTables');
+    Route::post('/getCode', 'Tools\\selectController@getCode');
+    Route::post('/getCodeByTables', 'Tools\\selectController@getCodeByTables');
 });
 

@@ -30,7 +30,7 @@ class deleteController extends Controller
     public function getExcel(Request $request, sqlExcelService $sqlExcel)
     {
         //处理sql字符串
-        $this->setSql($request->input('sql'));
+        $this->parseSqlXml($request->input('sql'));
         //生成excel的保存路径
         $savePath = config('tools.storage.deletePath') . 'setup_' . $this->getId() . '_001.xlsx';
         //每张表需要生成的数据量

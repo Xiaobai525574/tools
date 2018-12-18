@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tools;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\CodeService;
 use App\Http\Services\sqlExcelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +27,7 @@ class selectController extends Controller
     public function getExcel(Request $request)
     {
         //处理sql字符串
-        $this->setSql($request->input('sql'));
+        $this->parseXml($request->input('xml'));
         if (count($this->getTables()) > 1) return false;
 
         //每张表需要生成的数据量
@@ -94,6 +95,57 @@ class selectController extends Controller
         $sqlExcel->saveSqlExcel($savePath);
 
         return Storage::download($savePath);
+    }
+
+    public function getCode(Request $request, CodeService $codeService)
+    {
+        //处理sql字符串
+        $this->parseXml($request->input('xml'));
+        if (count($this->getTables()) > 1) return false;
+
+        $wheres = array_column($this->getWheres(), 2);
+        foreach ($wheres as $key => &$where) {
+            if (strpos($where, '#{') !== false) {
+                $where = substr($where, 2, strpos($where, ',') - 2);
+            } else {
+                unset($wheres[$key]);
+            }
+        }
+
+        $assertions = array_column($this->getResultMap(), 'property');
+        $code = $codeService->makeSelectCode(substr($this->getId(), 4)
+            , $request->input('num'), $wheres, $assertions);
+
+        $result = [
+            'status' => 'success',
+            'info' => $code
+        ];
+        return $result;
+    }
+
+    public function getCodeByTables(Request $request, CodeService $codeService)
+    {
+        $inputs = $this->parseInputs($request->input('inputs'));
+        $assertions = array_column($this->parseResultMapXml($request->input('assertions')), 'property');
+        $code = $codeService->makeSelectCode(substr($request->input('id'), 4)
+            , $request->input('num'), $inputs, $assertions);
+
+        $result = [
+            'status' => 'success',
+            'info' => $code
+        ];
+        return $result;
+    }
+
+    private function parseInputs($inputs)
+    {
+        $inputsArr = [];
+        do {
+            $inputs = substr($inputs, strpos($inputs, '#{') + 2);
+            $inputsArr[] = substr($inputs, 0, strpos($inputs, ','));
+        } while (strpos($inputs, '#{') !== false);
+
+        return $inputsArr;
     }
 
 }

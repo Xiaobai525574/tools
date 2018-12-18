@@ -18,6 +18,7 @@
 
         .container {
             margin-top: 60px;
+            width: 1200px;
         }
 
     </style>

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
 use PHPExcel_IOFactory;
 
 class Controller extends BaseController
@@ -15,6 +14,9 @@ class Controller extends BaseController
 
     /*id例如：execPKTS0005*/
     private $id = null;
+
+    /*字段映射数组*/
+    private $resultMap = [];
 
     /*sql类型（select、delete、update、insert）*/
     private $sqlType = null;
@@ -37,52 +39,90 @@ class Controller extends BaseController
         ];
     }
 
-    /**
-     * sql字符串转数组
-     * @param $sql
-     * @return mixed
-     */
-    protected function setSql($sql)
+    protected function parseXml($xmls)
+    {
+        $xmls = $this->explodeXml($xmls);
+        $this->parseResultMapXml($xmls[0]);
+        $this->parseSqlXml($xmls[1]);
+    }
+
+    protected function explodeXml($xmls)
+    {
+        $xmlArr = [];
+        if (strpos($xmls, '</resultMap>') !== false) {
+            $xmlArr = explode('</resultMap>', $xmls);
+            $xmlArr[0] .= '</resultMap>';
+        }
+
+        return $xmlArr;
+    }
+
+    protected function parseResultMapXml($xml)
     {
         /*去除换行符*/
-        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', $sql);
+        $xml = str_replace(array("\r\n", "\r", "\n"), ' ', $xml);
         /*去除多余空格*/
-        $sql = trim(preg_replace("/[\s]+/is", ' ', $sql));
+        $xml = trim(preg_replace("/[\s]+/is", ' ', $xml));
+
+        do {
+            $xml = substr($xml, strpos($xml, 'column="') + 8);
+            $arr['column'] = substr($xml, 0, strpos($xml, '"'));
+            $xml = substr($xml, strpos($xml, 'property="') + 10);
+            $arr['property'] = substr($xml, 0, strpos($xml, '"'));
+            $mapArr[] = $arr;
+        } while (strpos($xml, 'column="') !== false);
+
+        $this->setResultMap($mapArr);
+
+        return $mapArr;
+    }
+
+    /**
+     * sql字符串转数组
+     * @param $xml
+     * @return mixed
+     */
+    protected function parseSqlXml($xml)
+    {
+        /*去除换行符*/
+        $xml = str_replace(array("\r\n", "\r", "\n"), ' ', $xml);
+        /*去除多余空格*/
+        $xml = trim(preg_replace("/[\s]+/is", ' ', $xml));
 
         /*解析数据库操作类型（select、delete、update、insert）*/
-        $this->setSqlType(substr($sql, 1, 6));
+        $this->setSqlType(substr($xml, 1, 6));
 
         /*解析xml标签里的id*/
-        $this->setId(substr($sql, 12, 12));
+        $this->setId(substr($xml, 12, 12));
 
         /*解析sql字符串（转小写、去除xml标签、去除sql注释、去除多余字符）*/
-        $sql = strip_tags(strtolower($sql));
-        $strpos = strpos($sql, 'for update');
+        $xml = strip_tags($xml);
+        $strpos = strpos($xml, 'FOR UPDATE');
         if ($strpos !== false) {
-            $sql = substr($sql, 0, $strpos);
+            $xml = substr($xml, 0, $strpos);
         } else {
-            $strpos = strpos($sql, '--');
-            if ($strpos !== false) $sql = substr($sql, 0, $strpos);
+            $strpos = strpos($xml, '--');
+            if ($strpos !== false) $xml = substr($xml, 0, $strpos);
         }
-        $sql = trim($sql);
-        if (!$sql) return $this->getSql();
+        $xml = trim($xml);
+        if (!$xml) return $this->getSql();
 
         /*解析sql内容*/
         /*selects*/
-        list($selects, $sql) = explode('from', $sql);
+        list($selects, $xml) = explode('FROM', $xml);
         $selects = substr($selects, 7);
         if ($this->getSqlType() == 'select') {
             $this->parseSelects($selects);
         }
-        if (!$sql) return $this->getSql();
+        if (!$xml) return $this->getSql();
 
         /*tables 分割多表、数据库名（"."分隔）、别名(空格分隔)*/
-        list($tables, $sql) = explode('where', $sql);
+        list($tables, $xml) = explode('WHERE', $xml);
         $this->parseTables($tables);
-        if (!$sql) return $this->getSql();
+        if (!$xml) return $this->getSql();
 
         /*wheres*/
-        $this->parseWheres($sql);
+        $this->parseWheres($xml);
 
         return $this->getSql();
     }
@@ -92,7 +132,7 @@ class Controller extends BaseController
         if (!$sql) return $sql;
 
         /*去除换行符*/
-        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', strtolower($sql));
+        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', $sql);
         /*去除多余空格*/
         $sql = trim(preg_replace("/[\s]+/is", ' ', $sql));
         $selects = explode(',', str_replace(' ', '', $sql));
@@ -114,7 +154,7 @@ class Controller extends BaseController
         if (!$sql) return $sql;
 
         /*去除换行符*/
-        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', strtolower($sql));
+        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', $sql);
         /*去除多余空格*/
         $sql = trim(preg_replace("/[\s]+/is", ' ', $sql));
         $tables = explode(',', $sql);
@@ -131,10 +171,10 @@ class Controller extends BaseController
         if (!$sql) return $sql;
 
         /*去除换行符*/
-        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', strtolower($sql));
+        $sql = str_replace(array("\r\n", "\r", "\n"), ' ', $sql);
         /*去除多余空格*/
         $sql = trim(preg_replace("/[\s]+/is", ' ', $sql));
-        $wheres = explode('and', $sql);
+        $wheres = explode('AND', $sql);
         /*解析别名*/
         foreach ($wheres as &$where) {
             $where = explode(' ', trim($where));
@@ -156,6 +196,16 @@ class Controller extends BaseController
     protected function setId($id)
     {
         $this->id = $id;
+    }
+
+    protected function getResultMap()
+    {
+        return $this->resultMap;
+    }
+
+    protected function setResultMap($resultMap)
+    {
+        $this->resultMap = $resultMap;
     }
 
     protected function getSqlType()

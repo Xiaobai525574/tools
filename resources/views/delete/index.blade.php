@@ -24,7 +24,8 @@
         @csrf
         <div class="row">
             <div class="col-md-5">
-                <textarea class="form-control" name="sql">{{old('sql')}}</textarea>
+                <textarea class="form-control" name="sql"
+                          placeholder="1、不支持order by、group by、表别名、if/foreache等条件（可把相关代码删除，然后自定义数据条数）2、where条件仅支持“=”条件，可把其他（<=、<>等）条件暂时替换成“=”，不影响结果。">{{old('sql')}}</textarea>
             </div>
             <div class="col-md-2 delete-btn">
                 <input class="form-control" name="quantity" type="text" placeholder="数据条数（可选）">
