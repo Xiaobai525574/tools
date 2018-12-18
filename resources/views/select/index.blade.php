@@ -23,8 +23,7 @@
         <div class="row">
             <div class="col-md-5">
                 <textarea id="xml" class="form-control" name="xml"
-                          placeholder="1、不支持order by、group by、表别名、if/foreache等条件（可把相关代码删除，然后自定义数据条数）
-                          2、where条件仅支持“=”条件，可把其他（<=、<>等）条件暂时替换成“=”，不影响结果。"
+                          placeholder="1、不支持order by、group by、表别名、if/foreache等条件（可把相关代码删除，然后自定义数据条数）2、where条件仅支持“=”条件，可把其他（<=、<>等）条件暂时替换成“=”，不影响结果。"
                 >{{old('xml')}}</textarea>
             </div>
             <div class="col-md-2 select-btn">
