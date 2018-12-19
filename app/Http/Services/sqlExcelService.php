@@ -62,11 +62,11 @@ class sqlExcelService extends Spreadsheet
 
         if (is_array($quantities)) {
             foreach ($this->getWorksheetIterator() as $key => $sheet) {
-                $sheet->addRows($quantities[$key] - 1);
+                $sheet->addSqlRows($quantities[$key] - 1);
             }
         } else {
             foreach ($this->getWorksheetIterator() as $key => $sheet) {
-                $sheet->addRows($quantities - 1);
+                $sheet->addSqlRows($quantities - 1);
             }
         }
         return $this;
@@ -76,10 +76,10 @@ class sqlExcelService extends Spreadsheet
      * 唯一化数据
      * @return $this
      */
-    public function uniqueRows()
+    public function uniqueSqlRows()
     {
         foreach ($this->getWorksheetIterator() as $sheet) {
-            $sheet->uniqueRows();
+            $sheet->uniqueSqlRows();
         }
         return $this;
     }

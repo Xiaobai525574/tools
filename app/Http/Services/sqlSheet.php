@@ -17,33 +17,36 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class sqlSheet extends Worksheet
 {
-    /*为长度为1的字段和长度大于1的字段分别建立索引*/
+    /*为长度为1的字段和长度等于2的和长度大于2字段分别建立索引*/
     private $fieldsIndexes = [];
 
     /*当前操作行*/
     private $currentRow = 2;
 
     /**
-     * 初始化列：列宽、数据标志位（长度为1的字段和长度大于1的字段用两个计数器去标志）
+     * 初始化列：列宽、数据标志位（长度为1的字段和长度等于2和长度大于2的字段用两个计数器去标志）
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function initColumns()
+    public function initSqlColumns()
     {
         if (!$this->cellExistsByColumnAndRow(1, 2)) return $this;
         $fieldsIndexes = [];
-        $i = '10';
-        $j = '0';
+        $i = '0';
+        $j = '10';
+        $m = '100';
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
-            /*列宽自适应不好用，辣鸡*/
             $this->getColumnDimension($columnIndex)->setAutoSize(true);
             $len = strlen($this->getCell($columnIndex . 2)->getFormattedValue());
-            if ($len > 1) {
-                $fieldsIndexes[$columnIndex] = ['characters', $i];
-                $i++;
-            } elseif ($len == 1) {
-                $fieldsIndexes[$columnIndex] = ['character', $j];
-                $j = ($j >= 9) ? '0' : ((int)$j + 1);
+            if ($len == 1) {
+                $fieldsIndexes[$columnIndex] = ['type' => 'character', 'index' => $i];
+                $i = ($i >= 9) ? '0' : ((int)$i + 1);
+            } elseif ($len == 2) {
+                $fieldsIndexes[$columnIndex] = ['type' => 'character2', 'index' => $j];
+                $j = ($j >= 99) ? '10' : ((int)$j + 1);
+            } elseif ($len > 2) {
+                $fieldsIndexes[$columnIndex] = ['type' => 'characters', 'index' => $m];
+                $m = ($m >= 999) ? '100' : ((int)$m + 1);
             }
         }
         $this->setFieldsIndexes($fieldsIndexes);
@@ -57,12 +60,12 @@ class sqlSheet extends Worksheet
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function addRows($quantity)
+    public function addSqlRows($quantity)
     {
         if (!$quantity || $quantity < 1) return $this;
 
         for ($i = 0; $i < $quantity; $i++) {
-            $this->addRow();
+            $this->addSqlRow();
         }
 
         return $this;
@@ -73,7 +76,7 @@ class sqlSheet extends Worksheet
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function addRow()
+    public function addSqlRow()
     {
         $highestRow = $this->getHighestRow();
         $highesColumn = Coordinate::columnIndexFromString($this->getHighestColumn());
@@ -90,14 +93,12 @@ class sqlSheet extends Worksheet
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function uniqueRows()
+    public function uniqueSqlRows()
     {
-        if (!$this->getFieldsIndexes()) $this->initColumns();
+        if (!$this->getFieldsIndexes()) $this->initSqlColumns();
         foreach ($this->getRowIterator(config('tools.excel.startRow')) as $rowIndex => $row) {
             foreach ($row->getCellIterator() as $columnIndex => $cell) {
-                $fieldIndex = $this->getFieldsIndexes()[$columnIndex];
-                $num = $fieldIndex[1] + $rowIndex - config('tools.excel.startRow');
-                if ($fieldIndex[0] == 'character') $num = $num % 10;
+                $num = $this->getSqlCellIndex($columnIndex, $rowIndex);
                 $this->setCellValueExplicit($columnIndex . $rowIndex
                     , $this->mergeStr($cell->getValue(), $num)
                     , DataType::TYPE_STRING)
@@ -187,20 +188,40 @@ class sqlSheet extends Worksheet
     }
 
     /**
-     * 合并两个字符串（将$num覆盖在$str的前两位）
+     * 合并两个字符串（将$num覆盖在$str的前三位或前两位或前一位）
      * @param $str
      * @param $num
      * @return string
      */
     private function mergeStr($str, $num)
     {
-        if (strlen($str) > 1) {
-            $str = sprintf("%02d", $num) . mb_substr($str, 2);
-        } elseif (strlen($str) == 1) {
+        $len = strlen($str);
+        if ($len == 1) {
             $str = $num;
+        } elseif ($len == 2) {
+            $str = sprintf("%02d", $num) . mb_substr($str, 2);
+        } elseif ($len > 2) {
+            $str = sprintf("%03d", $num) . mb_substr($str, 3);
         }
 
         return $str;
+    }
+
+    private function getSqlCellIndex($column, $row)
+    {
+        $fieldIndex = $this->getFieldsIndexes()[$column];
+        $index = $fieldIndex['index'] + $row - config('tools.excel.startRow');
+        if ($fieldIndex['type'] == 'character') {
+            $index = $index % 10;
+        } elseif ($fieldIndex['type'] == 'character2') {
+            $index = $index % 100;
+        } elseif ($fieldIndex['type'] == 'characters') {
+            $index = $index % 1000;
+        } else {
+            return false;
+        }
+
+        return $index;
     }
 
     public function getFieldsIndexes()

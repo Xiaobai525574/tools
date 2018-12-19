@@ -47,8 +47,8 @@ class selectController extends Controller
         $sqlExcel = resolve(sqlExcelService::class);
         $sqlExcel->getSqlExcel(array_column($this->getTables(), 0))
             ->getSheet(0)
-            ->addRows($rows - 1)
-            ->uniqueRows()
+            ->addSqlRows($rows - 1)
+            ->uniqueSqlRows()
             ->redData($redFields)
             ->orangeData($orangeFields)
             ->setSelectedCell('A1');
@@ -71,8 +71,8 @@ class selectController extends Controller
         $sqlExcel->getSqlExcel($request->input('tableNames'));
         if ($sqlExcel->getSheetNames()[0] != 'sqlSheet') {
             foreach ($sqlExcel->getWorksheetIterator() as $key => $sheet) {
-                $sheet->addRows($rows[$key] - 1)
-                    ->uniqueRows();
+                $sheet->addSqlRows($rows[$key] - 1)
+                    ->uniqueSqlRows();
 
                 if ($whereFields[$key]) {
                     if (strpos($whereFields[$key], '=') !== false) {

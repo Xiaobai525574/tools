@@ -41,9 +41,13 @@ class Controller extends BaseController
 
     protected function parseXml($xmls)
     {
-        $xmls = $this->explodeXml($xmls);
-        $this->parseResultMapXml($xmls[0]);
-        $this->parseSqlXml($xmls[1]);
+        $xmlsArr = $this->explodeXml($xmls);
+        if ($xmlsArr) {
+            $this->parseResultMapXml($xmlsArr[0]);
+            $this->parseSqlXml($xmlsArr[1]);
+        } else {
+            $this->parseSqlXml($xmls);
+        }
     }
 
     protected function explodeXml($xmls)
