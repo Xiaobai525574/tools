@@ -143,7 +143,7 @@ class sqlExcelService extends Spreadsheet
      * @param $path
      * @return string
      */
-    private function getAPath($path)
+    public static function getAPath($path)
     {
         return config('filesystems.disks.local.root') . $path;
     }

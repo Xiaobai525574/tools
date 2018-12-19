@@ -6,7 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
-use PHPExcel_IOFactory;
+use Illuminate\Support\Facades\View;
 
 class Controller extends BaseController
 {
@@ -29,6 +29,29 @@ class Controller extends BaseController
 
     /*where条件数组*/
     private $wheres = [];
+
+    public function __construct()
+    {
+        $url = url()->current();
+        $navActive = '';
+        switch ($url) {
+            case url('select/index'):
+                $navActive = 'select';
+                break;
+            case url('select/getExcelByTables'):
+                $navActive = 'selects';
+                break;
+            case url('delete/index'):
+                $navActive = 'delete';
+                break;
+            case url('/updateInfo'):
+                $navActive = 'log';
+                break;
+            default:
+                break;
+        }
+        View::share('navActive', $navActive);
+    }
 
     protected function getSql()
     {

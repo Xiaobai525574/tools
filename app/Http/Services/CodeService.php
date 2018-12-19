@@ -44,7 +44,7 @@ class CodeService
         _id_Input input = new _id_Input();
 _input.set_
         // SQLの実行
-        List<_id_Output> result = ermPKTSRepository.exec_id_(input, "0551");
+        List<_id_Output> result = erm_subId_Repository.exec_id_(input, "0551");
 
         // 取得値の確認
         assertThat(result.size(), is(1));
@@ -71,6 +71,9 @@ php;
         /*替换id*/
         $code = str_replace('_id_', $id, $code);
 
+        /*替换子id*/
+        $code = str_replace('_subId_', substr($id, 0, 4), $code);
+
         /*替换num*/
         $code = str_replace('_num_', $num, $code);
 
@@ -78,15 +81,16 @@ php;
         $inputs = array_unique($inputs);
         $inputsStr = '';
         foreach ($inputs as $key => $val) {
-            $inputsStr .= '        input.set' . ucfirst($val) . "();\r\n";
+            $inputsStr .= '        input.set' . ucfirst($val) . "(\"\");\r\n";
         }
         $code = str_replace('_input.set_', $inputsStr, $code);
 
         /*替换assertThat*/
-        $assertions = array_unique($assertions);
         $assertionsStr = '';
         foreach ($assertions as $key => $assertion) {
-            $assertionsStr .= '        assertThat(result.get(0).get' . ucfirst($assertion) . "(), is(\"\"));\r\n";
+            $assertionsStr .= '        assertThat(result.get(0).get' . ucfirst($assertion['property']) . "(), is(\"";
+            if (isset($assertion['value'])) $assertionsStr .= $assertion['value'];
+            $assertionsStr .= "\"));\r\n";
         }
         $code = str_replace('_assertions_', $assertionsStr, $code);
 

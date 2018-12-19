@@ -7,6 +7,7 @@ use App\Http\Services\CodeService;
 use App\Http\Services\sqlExcelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class selectController extends Controller
 {
@@ -35,9 +36,7 @@ class selectController extends Controller
         if (!$rows) $rows = count($this->getWheres()) + 2;
 
         //生成excel的保存路径
-        $savePath = config('tools.storage.selectPath')
-            . str_replace('**', $this->getId(), $request->input('excelName')) . '.'
-            . config('tools.excel.type');
+        $savePath = $this->getSavePath($this->getId(), $request->input('excelNum'));
 
         //需要标红的单元格数组
         $redFields = array_column(array_column($this->getWheres(), 0), 1);
@@ -62,9 +61,7 @@ class selectController extends Controller
         if ($request->method() == 'GET') return view('select/getExcelByTables');
 
         //生成excel的保存路径
-        $savePath = config('tools.storage.selectPath')
-            . str_replace('**', $request->input('id'), $request->input('excelName')) . '.'
-            . config('tools.excel.type');
+        $savePath = $this->getSavePath($request->input('id'), $request->input('excelNum'));
         $rows = $request->input('tableRows');
         $whereFields = $request->input('tableWheres');
         $selectFields = $request->input('tableSelects');
@@ -112,9 +109,11 @@ class selectController extends Controller
             }
         }
 
-        $assertions = array_column($this->getResultMap(), 'property');
+        $num = $request->input('num');
+        $savePath = $this->getSavePath($this->getId(), $num);
+        $assertions = $this->getLastRowValuesByFields($this->getResultMap(), $savePath);
         $code = $codeService->makeSelectCode(substr($this->getId(), 4)
-            , $request->input('num'), $wheres, $assertions);
+            , $num, $wheres, $assertions);
 
         $result = [
             'status' => 'success',
@@ -135,6 +134,30 @@ class selectController extends Controller
             'info' => $code
         ];
         return $result;
+    }
+
+    private function getLastRowValuesByFields($fields, $excelPath)
+    {
+        if (Storage::disk('local')->exists($excelPath)) {
+            $sheet = IOFactory::load(sqlExcelService::getAPath($excelPath))->getSheet(0);
+            $highestRow = $sheet->getHighestRow();
+            foreach ($sheet->getColumnIterator() as $columnIndex => $column) {
+                $excelField = $sheet->getCell($columnIndex . 1)->getValue();
+                foreach ($fields as $key => &$field) {
+                    if ($excelField == $field['column']) {
+                        $field['value'] = $sheet->getCell($columnIndex . $highestRow)->getValue();
+                    }
+                }
+            }
+        }
+
+        return $fields;
+    }
+
+    private function getSavePath($id, $num)
+    {
+        return config('tools.storage.selectPath') . 'setup_'
+            . $id . '_' . $num . '.' . config('tools.excel.type');
     }
 
     private function parseInputs($inputs)

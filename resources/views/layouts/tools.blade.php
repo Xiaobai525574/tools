@@ -18,7 +18,6 @@
 
         .container {
             margin-top: 60px;
-            width: 1200px;
         }
 
     </style>
@@ -29,10 +28,11 @@
 <div class="container">
     <nav aria-label="Page navigation">
         <ul class="pagination">
-            <li><a href="{{url('select/index')}}">单表Select</a></li>
-            <li><a href="{{url('select/getExcelByTables')}}">多表Select</a></li>
-            <li><a href="{{url('delete/index')}}">Delete</a></li>
-            <li><a href="{{url('updateInfo')}}">更新日志</a></li>
+            <li @if($navActive == 'select') class="active" @endif><a href="{{url('select/index')}}">单表Select</a></li>
+            <li @if($navActive == 'selects') class="active" @endif><a
+                        href="{{url('select/getExcelByTables')}}">多表Select</a></li>
+            <li @if($navActive == 'delete') class="active" @endif><a href="{{url('delete/index')}}">Delete</a></li>
+            <li @if($navActive == 'log') class="active" @endif><a href="{{url('updateInfo')}}">更新日志</a></li>
         </ul>
     </nav>
     <div class="alert alert-info" role="alert">广播：被标记颜色的单元格会变成标准类型，请手动格式化为文字列类型^-^</div>

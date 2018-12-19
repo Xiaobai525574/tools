@@ -57,9 +57,9 @@
     <form id="getExcel" method="post">
         @csrf
         <div class="row select-row">
-            <div class="col-md-2">
-                <input id="addTable" class="btn btn-default btn-warning col-md-6" type="button" value="Add Table">
-                <input id="removeTable" class="btn btn-default btn-warning col-md-6" type="button" value="Remove">
+            <div class="col-md-2 btn-group">
+                <input id="addTable" class="btn btn-default btn-primary col-md-6" type="button" value="Add Table">
+                <input id="removeTable" class="btn btn-default btn-primary col-md-6" type="button" value="Remove">
             </div>
             <div class="col-md-2">
                 <input class="form-control" id="id" name="id" placeholder="id(例:execPKTS0005)">
@@ -89,11 +89,10 @@
         <div class="row select-row select-submit">
             @for($i=1; $i<=12; $i++)
                 <div class="col-md-2 btn-group">
-                    <input class="btn btn-default btn-info" type="submit" name="excelName" style="width: 110px"
-                           @if($i < 10) value="setup_**_00{{$i}}" @else value="setup_**_0{{$i}}" @endif>
-                    <input class="getCode btn btn-default btn-warning" type="button"
-                           @if($i < 10) data-num="00{{$i}}" @else data-num="0{{$i}}" @endif
-                           style="width: 60px" value="Code">
+                    <input class="col-md-6 btn btn-default btn-info" type="submit" name="excelNum"
+                           @if($i < 10) value="00{{$i}}" @else value="0{{$i}}" @endif>
+                    <input class="col-md-6 getCode btn btn-default btn-warning" type="button"
+                           @if($i < 10) data-num="00{{$i}}" @else data-num="0{{$i}}" @endif value="Code">
                 </div>
                 @if($i == 6)
         </div>

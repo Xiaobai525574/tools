@@ -30,36 +30,13 @@
                 <div>
                     <input class="form-control" name="quantity" type="text" placeholder="数据条数（可选）">
                 </div>
-                <div class="btn-group" role="group" aria-label="...">
-                    <input class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_001">
-                    <input class="getCode btn btn-default btn-warning" type="button" data-num="001" value="Code">
-                </div>
-                <div class="btn-group" role="group" aria-label="...">
-                    <input class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_002">
-                    <input class="getCode btn btn-default btn-warning" type="button" data-num="002" value="Code">
-                </div>
-                <div class="btn-group" role="group" aria-label="...">
-                    <input class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_003">
-                    <input class="getCode btn btn-default btn-warning" type="button" data-num="003" value="Code">
-                </div>
-                <div class="btn-group" role="group" aria-label="...">
-                    <input class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_004">
-                    <input class="getCode btn btn-default btn-warning" type="button" data-num="004" value="Code">
-                </div>
-                <div class="btn-group" role="group" aria-label="...">
-                    <input class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_005">
-                    <input class="getCode btn btn-default btn-warning" type="button" data-num="005" value="Code">
-                </div>
-                <div class="btn-group" role="group" aria-label="...">
-                    <input class="btn btn-default btn-info" type="submit" name="excelName"
-                           value="setup_**_006">
-                    <input class="getCode btn btn-default btn-warning" type="button" data-num="006" value="Code">
-                </div>
+                @for($i=1; $i<=6; $i++)
+                    <div class="col-md-12 btn-group" role="group" aria-label="...">
+                        <input class="col-md-6 btn btn-default btn-info" type="submit" name="excelNum" value="00{{$i}}">
+                        <input class="col-md-6 getCode btn btn-default btn-warning" type="button" data-num="00{{$i}}"
+                               value="Code">
+                    </div>
+                @endfor
             </div>
             <div class="col-md-5">
                 <textarea class="form-control" id="code"></textarea>
