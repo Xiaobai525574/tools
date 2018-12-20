@@ -104,11 +104,6 @@ class Controller extends BaseController
         return $mapArr;
     }
 
-    /**
-     * sql字符串转数组
-     * @param $xml
-     * @return mixed
-     */
     protected function parseSqlXml($xml)
     {
         /*去除换行符*/
@@ -205,14 +200,96 @@ class Controller extends BaseController
         /*解析别名*/
         foreach ($wheres as &$where) {
             $where = explode(' ', trim($where));
-            if (strpos($where[0], '.') !== false) {
-                $where[0] = explode('.', $where[0]);
-            } else {
-                $where[0] = ['', $where[0]];
-            }
+            $where[0] = $this->parseParameters($where[0]);
+            $where[2] = $this->parseParameters($where[2]);
         }
         $this->setWheres($wheres);
         return $wheres;
+    }
+
+    /**
+     * 解析where条件运算符左右两边的参数
+     * @param $str
+     * @return array
+     */
+    protected function parseParameters($str)
+    {
+        if (strpos($str, '.') !== false) {
+            $str = explode('.', $str);
+        } elseif (strpos($str, '#{') !== false) {
+            $param = substr($str, strpos($str, '#{') + 2);
+            $param = substr($param, 0, strpos($param, ','));
+            $str = ['isParam', $param];
+        } else {
+            $str = ['', $str];
+        }
+
+        return $str;
+    }
+
+    /**
+     * 获取where条件中出现的字段
+     */
+    protected function getWhereFields()
+    {
+        $wheres = $this->getWheres();
+        $wheresLeft = array_column($wheres, 0);
+        $wheresRight = array_column($wheres, 2);
+        $result = [];
+
+        foreach ($wheresLeft as $key => $value) {
+            if ($value[0] == 'isParam') {
+                $value = $wheresRight[$key];
+            }
+            if ($value[0] == '') {
+                $result[0][] = $value[1];
+            } else {
+                $result[$value[0]][] = $value[1];
+            }
+        }
+
+        return $result;
+    }
+
+    protected function getWhereParameters()
+    {
+        $wheres = $this->getWheres();
+        $wheresLeft = array_column($wheres, 0);
+        $wheresRight = array_column($wheres, 2);
+        $tables = $this->getTables();
+        $result = [];
+        $param = [];
+
+        foreach ($wheresLeft as $key => $value) {
+            if ($value[0] == 'isParam') {
+                $param['column'] = $wheresRight[$key][1];
+                $param['property'] = $value[1];
+                if ($wheresRight[$key][0] == '') {
+                    $param['table'] = $tables[0][0];
+                } else {
+                    foreach ($tables as $k => $v) {
+                        if ($v[1] == $wheresRight[$key][0]) {
+                            $param['table'] = $v[0];
+                        }
+                    }
+                }
+            } elseif ($wheresRight[$key][0] == 'isParam') {
+                $param['column'] = $value[1];
+                $param['property'] = $wheresRight[$key][1];
+                if ($value[0] == '') {
+                    $param['table'] = $tables[0][0];
+                } else {
+                    foreach ($tables as $k => $v) {
+                        if ($v[1] == $value[0]) {
+                            $param['table'] = $v[0];
+                        }
+                    }
+                }
+            }
+            $result[] = $param;
+        }
+
+        return $result;
     }
 
     protected function getId()

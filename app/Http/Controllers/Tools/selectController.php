@@ -100,20 +100,11 @@ class selectController extends Controller
         $this->parseXml($request->input('xml'));
         if (count($this->getTables()) > 1) return false;
 
-        $wheres = array_column($this->getWheres(), 2);
-        foreach ($wheres as $key => &$where) {
-            if (strpos($where, '#{') !== false) {
-                $where = substr($where, 2, strpos($where, ',') - 2);
-            } else {
-                unset($wheres[$key]);
-            }
-        }
-
+        $inputs = $this->getWhereParameters();
         $num = $request->input('num');
         $savePath = $this->getSavePath($this->getId(), $num);
-        $assertions = $this->getLastRowValuesByFields($this->getResultMap(), $savePath);
-        $code = $codeService->makeSelectCode(substr($this->getId(), 4)
-            , $num, $wheres, $assertions);
+        $assertions = $this->getLastRowValuesByResultMap($this->getResultMap(), $savePath);
+        $code = $codeService->makeSelectCode(substr($this->getId(), 4), $num, $inputs, $assertions);
 
         $result = [
             'status' => 'success',
@@ -124,10 +115,13 @@ class selectController extends Controller
 
     public function getCodeByTables(Request $request, CodeService $codeService)
     {
+        $num = $request->input('num');
+        $id = $request->input('id');
         $inputs = $this->parseInputs($request->input('inputs'));
-        $assertions = array_column($this->parseResultMapXml($request->input('assertions')), 'property');
-        $code = $codeService->makeSelectCode(substr($request->input('id'), 4)
-            , $request->input('num'), $inputs, $assertions);
+        $resultMap = $this->parseResultMapXml($request->input('assertions'));
+        $savePath = $this->getSavePath($id, $num);
+        $assertions = $this->getLastRowValuesByResultMap($resultMap, $savePath);
+        $code = $codeService->makeSelectCode(substr($id, 4), $num, $inputs, $assertions);
 
         $result = [
             'status' => 'success',
@@ -136,14 +130,14 @@ class selectController extends Controller
         return $result;
     }
 
-    private function getLastRowValuesByFields($fields, $excelPath)
+    private function getLastRowValuesByResultMap($resultMap, $excelPath)
     {
         if (Storage::disk('local')->exists($excelPath)) {
             $sheet = IOFactory::load(sqlExcelService::getAPath($excelPath))->getSheet(0);
             $highestRow = $sheet->getHighestRow();
             foreach ($sheet->getColumnIterator() as $columnIndex => $column) {
                 $excelField = $sheet->getCell($columnIndex . 1)->getValue();
-                foreach ($fields as $key => &$field) {
+                foreach ($resultMap as $key => &$field) {
                     if ($excelField == $field['column']) {
                         $field['value'] = $sheet->getCell($columnIndex . $highestRow)->getValue();
                     }
@@ -151,7 +145,7 @@ class selectController extends Controller
             }
         }
 
-        return $fields;
+        return $resultMap;
     }
 
     private function getSavePath($id, $num)

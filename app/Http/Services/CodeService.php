@@ -22,13 +22,13 @@ class CodeService
      * 取得結果の各値の内容が正しいこと<br>
      *
      * 複数件取得可能な場合は複数件を実行し、Repositoryクラスがエラーとならないこと<br>
-     *
+     * foreach：0件<br>
+     * foreach：1件<br>
+     * foreach：複数件<br>
      * ORDER BYにより並び順が指定されている場合、取得結果の並び順が正しいこと<br>
-     *
      * GROUP BYにより組み分けが指定されている場合、取得結果の組み分けが正しいこと<br>
      *
      * カウント件数取得<br>
-     *
      * <b>[想定結果]</b><br>
      * 1件取得<br>
      * 2件取得<br>
@@ -78,10 +78,9 @@ php;
         $code = str_replace('_num_', $num, $code);
 
         /*替换input.set*/
-        $inputs = array_unique($inputs);
         $inputsStr = '';
         foreach ($inputs as $key => $val) {
-            $inputsStr .= '        input.set' . ucfirst($val) . "(\"\");\r\n";
+            $inputsStr .= '        input.set' . ucfirst($val['property']) . "(\"" . $val['value']. "\");\r\n";
         }
         $code = str_replace('_input.set_', $inputsStr, $code);
 
