@@ -240,8 +240,16 @@ class Controller extends BaseController
         foreach ($wheres as &$where) {
             /*todo:拆分出字段名、参数、常数*/
             $where = explode(' ', trim($where));
-            $where[0] = $this->parseParameters($where[0]);
-            $where[2] = $this->parseParameters($where[2]);
+            if (strpos($where[0], '.') !== false) {
+                $where[0] = explode('.', $where[0]);
+                $where[0][0] = $this->toTableName($where[0][0]);
+            } elseif (strpos($where[0], '#{') !== false) {
+                $where[0] = substr($where[0], strpos($where[0], '#{') + 2);
+                $param = substr($param, 0, strpos($param, ','));
+                $str = ['isParam', $param];
+            } else {
+                $str = ['', $str];
+            }
         }
         $this->setWhere($wheres);
         return $wheres;
