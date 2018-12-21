@@ -62,10 +62,10 @@ php;
      * @param string $id ep:'PKTS0005', not 'execPKTS0005'
      * @param $num
      * @param $inputs
-     * @param $assertions
+     * @param $outputs
      * @return mixed|string
      */
-    public function makeSelectCode($id, $num, $inputs, $assertions)
+    public function makeSelectCode($id, $num, $inputs, $outputs)
     {
         $code = $this->getSelectCode();
         /*替换id*/
@@ -80,13 +80,13 @@ php;
         /*替换input.set*/
         $inputsStr = '';
         foreach ($inputs as $key => $val) {
-            $inputsStr .= '        input.set' . ucfirst($val['property']) . "(\"" . $val['value']. "\");\r\n";
+            $inputsStr .= '        input.set' . ucfirst($val['property']) . "(\"" . $val['value'] . "\");\r\n";
         }
         $code = str_replace('_input.set_', $inputsStr, $code);
 
         /*替换assertThat*/
         $assertionsStr = '';
-        foreach ($assertions as $key => $assertion) {
+        foreach ($outputs as $key => $assertion) {
             $assertionsStr .= '        assertThat(result.get(0).get' . ucfirst($assertion['property']) . "(), is(\"";
             if (isset($assertion['value'])) $assertionsStr .= $assertion['value'];
             $assertionsStr .= "\"));\r\n";

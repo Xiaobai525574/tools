@@ -29,22 +29,22 @@ class selectController extends Controller
     {
         //处理sql字符串
         $this->parseXml($request->input('xml'));
-        if (count($this->getTables()) > 1) return false;
+        if (count($this->getFrom()) > 1) return false;
 
         //每张表需要生成的数据量
         $rows = $request->input('quantity');
-        if (!$rows) $rows = count($this->getWheres()) + 2;
+        if (!$rows) $rows = count($this->getWhere()) + 2;
 
         //生成excel的保存路径
         $savePath = $this->getSavePath($this->getId(), $request->input('excelNum'));
 
         //需要标红的单元格数组
-        $redFields = array_column(array_column($this->getWheres(), 0), 1);
+        $redFields = array_column(array_column($this->getWhere(), 0), 1);
         //需要标橙的单元格数组
-        $orangeFields = array_column($this->getSelects(), 1);
+        $orangeFields = array_column($this->getSelect(), 1);
 
         $sqlExcel = resolve(sqlExcelService::class);
-        $sqlExcel->getSqlExcel(array_column($this->getTables(), 0))
+        $sqlExcel->getSqlExcel(array_column($this->getFrom(), 0))
             ->getSheet(0)
             ->addSqlRows($rows - 1)
             ->uniqueSqlRows()
@@ -73,7 +73,7 @@ class selectController extends Controller
 
                 if ($whereFields[$key]) {
                     if (strpos($whereFields[$key], '=') !== false) {
-                        $whereFields[$key] = array_column(array_column($this->parseWheres($whereFields[$key]), 0), 1);
+                        $whereFields[$key] = array_column(array_column($this->parseWhere($whereFields[$key]), 0), 1);
                     } else {
                         $whereFields[$key] = explode(',', str_replace(' ', '', $whereFields[$key]));
                     }
@@ -81,7 +81,7 @@ class selectController extends Controller
                 }
 
                 if ($selectFields[$key]) {
-                    $selectFields[$key] = array_column($this->parseSelects($selectFields[$key]), 1);
+                    $selectFields[$key] = array_column($this->parseSelect($selectFields[$key]), 1);
                     $sheet->orangeData($selectFields[$key]);
                 }
 
@@ -98,13 +98,14 @@ class selectController extends Controller
     {
         //处理sql字符串
         $this->parseXml($request->input('xml'));
-        if (count($this->getTables()) > 1) return false;
+        if (count($this->getFrom()) > 1) return false;
 
-        $inputs = $this->getWhereParameters();
+        $inputs = $this->getCodeInputs();
+        $outputs = $this->getCodeOutputs();
         $num = $request->input('num');
         $savePath = $this->getSavePath($this->getId(), $num);
-        $assertions = $this->getLastRowValuesByResultMap($this->getResultMap(), $savePath);
-        $code = $codeService->makeSelectCode(substr($this->getId(), 4), $num, $inputs, $assertions);
+        list($inputs, $outputs) = $this->getLastRowValues($savePath, $inputs, $outputs);
+        $code = $codeService->makeSelectCode(substr($this->getId(), 4), $num, $inputs, $outputs);
 
         $result = [
             'status' => 'success',
@@ -120,7 +121,7 @@ class selectController extends Controller
         $inputs = $this->parseInputs($request->input('inputs'));
         $resultMap = $this->parseResultMapXml($request->input('assertions'));
         $savePath = $this->getSavePath($id, $num);
-        $assertions = $this->getLastRowValuesByResultMap($resultMap, $savePath);
+        $assertions = $this->getLastRowValues($savePath, $resultMap, $inputs);
         $code = $codeService->makeSelectCode(substr($id, 4), $num, $inputs, $assertions);
 
         $result = [
@@ -130,22 +131,45 @@ class selectController extends Controller
         return $result;
     }
 
-    private function getLastRowValuesByResultMap($resultMap, $excelPath)
+    private function getLastRowValues($excelPath, $inputs = null, $outputs = null)
     {
         if (Storage::disk('local')->exists($excelPath)) {
-            $sheet = IOFactory::load(sqlExcelService::getAPath($excelPath))->getSheet(0);
+            if ($outputs) {
+                $outputs = $this->getLastRowValue($excelPath, $outputs);
+            }
+            if ($inputs) {
+                $inputs = $this->getLastRowValue($excelPath, $inputs);
+            }
+        }
+
+        $result = [
+            'inputs' => $inputs,
+            'outputs' => $outputs
+        ];
+        return $result;
+    }
+
+    private function getLastRowValue($excelPath, $fields)
+    {
+        $sqlExcel = IOFactory::load(sqlExcelService::getAPath($excelPath));
+        $highestRow = null;
+        $sheetTitle = null;
+        $excelField = null;
+
+        foreach ($fields as $tableName => &$table) {
+            $sheet = $sqlExcel->getSheetByName($tableName);
             $highestRow = $sheet->getHighestRow();
             foreach ($sheet->getColumnIterator() as $columnIndex => $column) {
                 $excelField = $sheet->getCell($columnIndex . 1)->getValue();
-                foreach ($resultMap as $key => &$field) {
-                    if ($excelField == $field['column']) {
-                        $field['value'] = $sheet->getCell($columnIndex . $highestRow)->getValue();
+                foreach ($table as $key => &$value) {
+                    if ($excelField == $value['column']) {
+                        $value['value'] = $sheet->getCell($columnIndex . $highestRow)->getValue();
                     }
                 }
             }
         }
 
-        return $resultMap;
+        return $fields;
     }
 
     private function getSavePath($id, $num)
