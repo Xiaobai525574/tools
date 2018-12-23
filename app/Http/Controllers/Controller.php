@@ -187,17 +187,8 @@ class Controller extends BaseController
         $result = [];
         $selects = explode(',', str_replace(' ', '', $sql));
         foreach ($selects as $key => &$select) {
-            if (strpos($select, '.') !== false) {
-                list($tableAlias, $select) = explode('.', $select);
-            } else {
-                $tableAlias = '';
-            }
-            $select = explode('AS', $select);
-            if (count($select) == 1) $select[1] = '';
-            $result[$this->toTableName($tableAlias)][] = [
-                'name' => $select[0],
-                'alias' => $select[1]
-            ];
+            $select = $this->parseField($select);
+            $result[$select['tableName']][] = $select;
         }
         $this->setSelect($result);
 
@@ -235,24 +226,55 @@ class Controller extends BaseController
         if (!$sql) return $sql;
         if ($filter) $sql = $this->strFilter($sql);
 
-        $wheres = explode('AND', $sql);
         /*解析别名*/
+        $wheres = explode('AND', $sql);
         foreach ($wheres as &$where) {
-            /*todo:拆分出字段名、参数、常数*/
             $where = explode(' ', trim($where));
-            if (strpos($where[0], '.') !== false) {
-                $where[0] = explode('.', $where[0]);
-                $where[0][0] = $this->toTableName($where[0][0]);
-            } elseif (strpos($where[0], '#{') !== false) {
-                $where[0] = substr($where[0], strpos($where[0], '#{') + 2);
-                $param = substr($param, 0, strpos($param, ','));
-                $str = ['isParam', $param];
+            if (strpos($where[0], '#{') !== false) {
+                $where[0] = $this->parseParameter($where[0]);
+                $where[2] = $this->parseField($where[2]);
             } else {
-                $str = ['', $str];
+                $where[0] = $this->parseField($where[0]);
+                if (strpos($where[2], '#{') !== false) {
+                    $where[2] = $this->parseParameter($where[2]);
+                } else {
+                    $where[2] = ['value' => $where[2]];
+                }
             }
         }
         $this->setWhere($wheres);
         return $wheres;
+    }
+
+    protected function parseField($str)
+    {
+        $alias = '';
+        $tableAlias = '';
+        if (strpos($str, '.') !== false) {
+            list($tableAlias, $str) = explode(',', $str);
+        }
+        if (strpos($str, 'AS') !== false) {
+            list($str, $alias) = explode('AS', $str);
+        }
+        $str = [
+            'name' => $str,
+            'alias' => $alias,
+            'tableAlias' => $tableAlias,
+            'tableName' => $this->toTableName($tableAlias)
+        ];
+
+        return $str;
+    }
+
+    protected function parseParameter($str)
+    {
+        $str = substr($str, strpos($str, '#{') + 2);
+        $str = substr($str, 0, strpos($str, ','));
+        $str = [
+            'parameter' => $str
+        ];
+
+        return $str;
     }
 
     protected function parseGroupBy($sql)
