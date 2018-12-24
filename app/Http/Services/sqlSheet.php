@@ -30,7 +30,7 @@ class sqlSheet extends Worksheet
      */
     public function initSqlColumns()
     {
-        if (!$this->cellExistsByColumnAndRow(1, 2)) return $this;
+        if ($this->getCell('A2')->getFormattedValue() == '') return $this;
         $fieldsIndexes = [];
         $i = '0';
         $j = '10';

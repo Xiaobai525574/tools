@@ -66,8 +66,8 @@ class Controller extends BaseController
     {
         $xmlsArr = $this->explodeXml($xmls);
         if ($xmlsArr) {
-            $this->parseResultMapXml($xmlsArr[0]);
             $this->parseSqlXml($xmlsArr[1]);
+            $this->parseResultMapXml($xmlsArr[0]);
         } else {
             $this->parseSqlXml($xmls);
         }
@@ -91,14 +91,22 @@ class Controller extends BaseController
         /*去除多余空格*/
         $xml = trim(preg_replace("/[\s]+/is", ' ', $xml));
 
+        $select = $this->getSelect();
         do {
             $xml = substr($xml, strpos($xml, 'column="') + 8);
             $arr['column'] = substr($xml, 0, strpos($xml, '"'));
             $xml = substr($xml, strpos($xml, 'property="') + 10);
             $arr['property'] = substr($xml, 0, strpos($xml, '"'));
             $mapArr[] = $arr;
-        } while (strpos($xml, 'column="') !== false);
 
+            /*将映射名称写入查询字段数组中*/
+            foreach ($select as $key => &$val) {
+                if ($val['name'] == $arr['column']) {
+                    $val['resultMap'] = $arr['property'];
+                }
+            }
+        } while (strpos($xml, 'column="') !== false);
+        $this->setSelect($select);
         $this->setResultMap($mapArr);
 
         return $mapArr;
@@ -187,8 +195,7 @@ class Controller extends BaseController
         $result = [];
         $selects = explode(',', str_replace(' ', '', $sql));
         foreach ($selects as $key => &$select) {
-            $select = $this->parseField($select);
-            $result[$select['tableName']][] = $select;
+            $result[] = $this->parseField($select);
         }
         $this->setSelect($result);
 
@@ -287,97 +294,37 @@ class Controller extends BaseController
 
     }
 
-    /**
-     * 解析where条件运算符左右两边的参数
-     * @param $str
-     * @return array
-     */
-    protected function parseParameters($str)
-    {
-        if (strpos($str, '.') !== false) {
-            $str = explode('.', $str);
-            $str[0] = $this->toTableName($str[0]);
-        } elseif (strpos($str, '#{') !== false) {
-            $param = substr($str, strpos($str, '#{') + 2);
-            $param = substr($param, 0, strpos($param, ','));
-            $str = ['isParam', $param];
-        } else {
-            $str = ['', $str];
-        }
-
-        return $str;
-    }
-
-    /**
-     * 获取where条件中出现的字段
-     */
     protected function getWhereFields()
     {
-        $wheres = $this->getWhere();
-        $wheresLeft = array_column($wheres, 0);
-        $wheresRight = array_column($wheres, 2);
         $result = [];
-
-        foreach ($wheresLeft as $key => $value) {
-            if ($value[0] == 'isParam') {
-                $value = $wheresRight[$key];
+        $where = $this->getWhere();
+        foreach ($where as $key => $value) {
+            if (key_exists($value[0]['name'])) {
+                $result[] =  $value[0];
             }
-            if ($value[0] == '') {
-                $result[0][] = $value[1];
-            } else {
-                $result[$value[0]][] = $value[1];
+            if (key_exists($value[2]['name'])) {
+                $result[] =  $value[2];
             }
         }
 
         return $result;
     }
 
-    protected function getCodeInputs()
+    protected function getWhereParameters()
     {
-        $wheres = $this->getWhere();
-        $wheresLeft = array_column($wheres, 0);
-        $wheresRight = array_column($wheres, 2);
-        $tables = $this->getFrom();
         $result = [];
-        $param = [];
-        $tableName = '';
-
-        foreach ($wheresLeft as $key => $value) {
-            if ($value[0] == 'isParam') {
-                $param['column'] = $wheresRight[$key][1];
-                $param['property'] = $value[1];
-                if ($wheresRight[$key][0] == '') {
-                    $tableName = $tables[0][0];
-                } else {
-                    foreach ($tables as $k => $v) {
-                        if ($v[1] == $wheresRight[$key][0]) {
-                            $tableName = $v[0];
-                        }
-                    }
-                }
-            } elseif ($wheresRight[$key][0] == 'isParam') {
-                $param['column'] = $value[1];
-                $param['property'] = $wheresRight[$key][1];
-                if ($value[0] == '') {
-                    $tableName = $tables[0][0];
-                } else {
-                    foreach ($tables as $k => $v) {
-                        if ($v[1] == $value[0]) {
-                            $tableName = $v[0];
-                        }
-                    }
-                }
+        $where = $this->getWhere();
+        foreach ($where as $key => $value) {
+            if (key_exists('parameter', $value[0])) {
+                $value[2]['parameter'] = $value[0]['parameter'];
+                $result[] = $value[2];
+            } elseif (key_exists('parameter', $value[2])) {
+                $value[0]['parameter'] = $value[2]['parameter'];
+                $result[] = $value[0];
             }
-            $result[$tableName][] = $param;
         }
 
         return $result;
-    }
-
-    protected function getCodeOutputs()
-    {
-        $selects = $this->getSelect();
-        $resultMap = $this->getResultMap();
     }
 
     /**

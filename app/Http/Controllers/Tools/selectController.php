@@ -39,12 +39,13 @@ class selectController extends Controller
         $savePath = $this->getSavePath($this->getId(), $request->input('excelNum'));
 
         //需要标红的单元格数组
-        $redFields = array_column(array_column($this->getWhere(), 0), 1);
+        /*todo:待解决多表问题*/
+        $redFields = $this->getWhereFields();
         //需要标橙的单元格数组
-        $orangeFields = array_column($this->getSelect(), 1);
+        $orangeFields = array_column($this->getSelect(), 'name');
 
         $sqlExcel = resolve(sqlExcelService::class);
-        $sqlExcel->getSqlExcel(array_column($this->getFrom(), 0))
+        $sqlExcel->getSqlExcel(array_column($this->getFrom(), 'name'))
             ->getSheet(0)
             ->addSqlRows($rows - 1)
             ->uniqueSqlRows()
@@ -100,8 +101,8 @@ class selectController extends Controller
         $this->parseXml($request->input('xml'));
         if (count($this->getFrom()) > 1) return false;
 
-        $inputs = $this->getCodeInputs();
-        $outputs = $this->getCodeOutputs();
+        $inputs = $this->getWhereParameters();
+        $outputs = $this->getSelect();
         $num = $request->input('num');
         $savePath = $this->getSavePath($this->getId(), $num);
         list($inputs, $outputs) = $this->getLastRowValues($savePath, $inputs, $outputs);
@@ -152,19 +153,17 @@ class selectController extends Controller
     private function getLastRowValue($excelPath, $fields)
     {
         $sqlExcel = IOFactory::load(sqlExcelService::getAPath($excelPath));
-        $highestRow = null;
-        $sheetTitle = null;
         $excelField = null;
+        $sheet = '';
+        $highestRow = null;
 
-        foreach ($fields as $tableName => &$table) {
-            $sheet = $sqlExcel->getSheetByName($tableName);
-            $highestRow = $sheet->getHighestRow();
-            foreach ($sheet->getColumnIterator() as $columnIndex => $column) {
-                $excelField = $sheet->getCell($columnIndex . 1)->getValue();
-                foreach ($table as $key => &$value) {
-                    if ($excelField == $value['column']) {
-                        $value['value'] = $sheet->getCell($columnIndex . $highestRow)->getValue();
-                    }
+        foreach ($sheet->getColumnIterator() as $columnIndex => $column) {
+            $excelField = $sheet->getCell($columnIndex . 1)->getValue();
+            foreach ($fields as $key => &$value) {
+                if ($excelField == $value['name']) {
+                    $sheet = $sqlExcel->getSheetByName($value['tableName']);
+                    $highestRow = $sheet->getHighestRow();
+                    $value['value'] = $sheet->getCell($columnIndex . $highestRow)->getValue();
                 }
             }
         }
