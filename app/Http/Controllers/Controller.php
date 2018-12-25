@@ -65,7 +65,7 @@ class Controller extends BaseController
     protected function parseXml($xmls)
     {
         $xmlsArr = $this->explodeXml($xmls);
-        if ($xmlsArr) {
+        if (is_array($xmlsArr)) {
             $this->parseSqlXml($xmlsArr[1]);
             $this->parseResultMapXml($xmlsArr[0]);
         } else {
@@ -75,13 +75,12 @@ class Controller extends BaseController
 
     protected function explodeXml($xmls)
     {
-        $xmlArr = [];
         if (strpos($xmls, '</resultMap>') !== false) {
-            $xmlArr = explode('</resultMap>', $xmls);
-            $xmlArr[0] .= '</resultMap>';
+            $xmls = explode('</resultMap>', $xmls);
+            $xmls[0] .= '</resultMap>';
         }
 
-        return $xmlArr;
+        return $xmls;
     }
 
     protected function parseResultMapXml($xml)
@@ -101,7 +100,11 @@ class Controller extends BaseController
 
             /*将映射名称写入查询字段数组中*/
             foreach ($select as $key => &$val) {
-                if ($val['name'] == $arr['column']) {
+                if ($val['alias']) {
+                    if ($val['alias'] == $arr['column']) {
+                        $val['resultMap'] = $arr['property'];
+                    }
+                } elseif ($val['name'] == $arr['column']) {
                     $val['resultMap'] = $arr['property'];
                 }
             }
@@ -244,6 +247,8 @@ class Controller extends BaseController
                 $where[0] = $this->parseField($where[0]);
                 if (strpos($where[2], '#{') !== false) {
                     $where[2] = $this->parseParameter($where[2]);
+                } elseif (strpos($where[2], '.') !== false) {
+                    $where[2] = $this->parseField($where[2]);
                 } else {
                     $where[2] = ['value' => $where[2]];
                 }
@@ -256,19 +261,23 @@ class Controller extends BaseController
     protected function parseField($str)
     {
         $alias = '';
-        $tableAlias = '';
-        if (strpos($str, '.') !== false) {
-            list($tableAlias, $str) = explode(',', $str);
-        }
         if (strpos($str, 'AS') !== false) {
             list($str, $alias) = explode('AS', $str);
         }
-        $str = [
-            'name' => $str,
-            'alias' => $alias,
-            'tableAlias' => $tableAlias,
-            'tableName' => $this->toTableName($tableAlias)
-        ];
+        if (strpos($str, '(') !== false) {
+            $str = [
+                'function' => $str,
+                'alias' => $alias
+            ];
+        } elseif (strpos($str, '.') !== false) {
+            list($tableAlias, $str) = explode('.', $str);
+            $str = [
+                'name' => $str,
+                'alias' => $alias,
+                'tableAlias' => $tableAlias,
+                'tableName' => $this->toTableName($tableAlias)
+            ];
+        }
 
         return $str;
     }
@@ -299,11 +308,10 @@ class Controller extends BaseController
         $result = [];
         $where = $this->getWhere();
         foreach ($where as $key => $value) {
-            if (key_exists($value[0]['name'])) {
-                $result[] =  $value[0];
-            }
-            if (key_exists($value[2]['name'])) {
-                $result[] =  $value[2];
+            for ($i = 0; $i < 3; $i = $i + 2) {
+                if (key_exists('name', $value[$i])) {
+                    $result[] = $value[$i];
+                }
             }
         }
 

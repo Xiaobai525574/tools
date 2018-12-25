@@ -25,11 +25,11 @@ class selectController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function getExcel(Request $request)
+    public function getExcel(Request $request, sqlExcelService $sqlExcelService)
     {
         //处理sql字符串
         $this->parseXml($request->input('xml'));
-        if (count($this->getFrom()) > 1) return false;
+//        if (count($this->getFrom()) > 1) return false;
 
         //每张表需要生成的数据量
         $rows = $request->input('quantity');
@@ -44,15 +44,14 @@ class selectController extends Controller
         //需要标橙的单元格数组
         $orangeFields = array_column($this->getSelect(), 'name');
 
-        $sqlExcel = resolve(sqlExcelService::class);
-        $sqlExcel->getSqlExcel(array_column($this->getFrom(), 'name'))
-            ->getSheet(0)
-            ->addSqlRows($rows - 1)
-            ->uniqueSqlRows()
-            ->redData($redFields)
-            ->orangeData($orangeFields)
-            ->setSelectedCell('A1');
-        $sqlExcel->saveSqlExcel($savePath);
+        foreach ($sqlExcelService->getWorksheetIterator() as $key => $sqlSheet) {
+            $sqlSheet->addSqlRows($rows - 1)
+                ->uniqueSqlRows()
+                ->redData($redFields)
+                ->orangeData($orangeFields)
+                ->setSelectedCell('A1');
+        }
+        $sqlExcelService->saveSqlExcel($savePath);
 
         return Storage::download($savePath);
     }

@@ -56,17 +56,17 @@ class sqlExcelService extends Spreadsheet
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function createData($quantities)
+    public function addSqlRows($quantities)
     {
         if (!$quantities) return $this;
 
         if (is_array($quantities)) {
             foreach ($this->getWorksheetIterator() as $key => $sheet) {
-                $sheet->addSqlRows($quantities[$key] - 1);
+                $sheet->addSqlRows($quantities[$key]);
             }
         } else {
             foreach ($this->getWorksheetIterator() as $key => $sheet) {
-                $sheet->addSqlRows($quantities - 1);
+                $sheet->addSqlRows($quantities);
             }
         }
         return $this;
