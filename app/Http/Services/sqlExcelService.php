@@ -16,8 +16,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class sqlExcelService extends Spreadsheet
 {
-    /*当前操作行*/
-    private $currentRow = 2;
 
     /**
      * 根据表名数组获取包含个表sheet页的Excel
@@ -51,72 +49,6 @@ class sqlExcelService extends Spreadsheet
     }
 
     /**
-     * 对每个sheet页添加数据
-     * @param $quantities
-     * @return $this
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     */
-    public function addSqlRows($quantities)
-    {
-        if (!$quantities) return $this;
-
-        if (is_array($quantities)) {
-            foreach ($this->getWorksheetIterator() as $key => $sheet) {
-                $sheet->addSqlRows($quantities[$key]);
-            }
-        } else {
-            foreach ($this->getWorksheetIterator() as $key => $sheet) {
-                $sheet->addSqlRows($quantities);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * 唯一化数据
-     * @return $this
-     */
-    public function uniqueSqlRows()
-    {
-        foreach ($this->getWorksheetIterator() as $sheet) {
-            $sheet->uniqueSqlRows();
-        }
-        return $this;
-    }
-
-    /**
-     * 将所给字段在表格中逐行依次标红，最后一行中全部标红
-     * @param $redFields
-     * @return $this
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     */
-    public function redData($fields)
-    {
-        if (!$fields) return $this;
-
-        foreach ($this->getWorksheetIterator() as $sheetIndex => $sheet) {
-            $sheet->redData($fields[$sheetIndex]);
-        }
-        return $this;
-    }
-
-    /**
-     * 将所给字段在表格中标橙（标红的行除外）
-     * @param $fields
-     * @param null $row
-     * @return $this
-     */
-    public function orangeData($fields, $row = null)
-    {
-        if (!$fields) return $this;
-
-        foreach ($this->getWorksheetIterator() as $sheetIndex => $sheet) {
-            $sheet->orangeData($fields[$sheetIndex]);
-        }
-        return $this;
-    }
-
-    /**
      * 保存sqlExcel到本地
      * @param $path
      * @return bool
@@ -146,16 +78,6 @@ class sqlExcelService extends Spreadsheet
     public static function getAPath($path)
     {
         return config('filesystems.disks.local.root') . $path;
-    }
-
-    public function getCurrentRow()
-    {
-        return $this->currentRow;
-    }
-
-    public function setCurrentRow($currentRow)
-    {
-        $this->currentRow = $currentRow;
     }
 
 }

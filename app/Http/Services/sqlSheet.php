@@ -119,9 +119,9 @@ class sqlSheet extends Worksheet
     public function redData($fields, $row = null)
     {
         if (!$fields) return $this;
-        $fields = array_unique($fields);
+        $fieldNames = array_unique(array_column($fields, 'name'));
         if (!$row) $row = $this->getCurrentRow();
-        $highestRow = $row + count($fields);
+        $highestRow = $row + count($fieldNames);
         $style = new Style();
         $style->applyFromArray([
             'fill' => [
@@ -135,7 +135,7 @@ class sqlSheet extends Worksheet
 
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
             $fieldName = $this->getCell($columnIndex . 1)->getValue();
-            if (in_array($fieldName, $fields)) {
+            if (in_array($fieldName, $fieldNames)) {
                 foreach ($column->getCellIterator($this->getCurrentRow()) as $rowIndex => $cell) {
                     if ($rowIndex == $row || $rowIndex == $highestRow) {
                         $this->duplicateStyle($style, $columnIndex . $rowIndex);
@@ -163,7 +163,7 @@ class sqlSheet extends Worksheet
     public function orangeData($fields, $row = null)
     {
         if (!$fields) return $this;
-        $fields = array_unique($fields);
+        $fieldNames = array_unique(array_column($fields, 'name'));
         if (!$row) $row = $this->getCurrentRow();
         $highestRow = $this->getHighestRow();
         $style = new Style();
@@ -178,7 +178,7 @@ class sqlSheet extends Worksheet
         ]);
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
             $fieldName = $this->getCell($columnIndex . 1)->getValue();
-            if (in_array($fieldName, $fields)) {
+            if (in_array($fieldName, $fieldNames)) {
                 $this->duplicateStyle($style, $columnIndex . $row . ':' . $columnIndex . $highestRow);
             }
         }

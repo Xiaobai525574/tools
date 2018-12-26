@@ -80,15 +80,17 @@ php;
         /*替换input.set*/
         $inputsStr = '';
         foreach ($inputs as $key => $val) {
-            $inputsStr .= '        input.set' . ucfirst($val['property']) . "(\"" . $val['value'] . "\");\r\n";
+            $inputsStr .= '        input.set' . ucfirst($val['parameter']) . "(\"";
+            if (key_exists('value', $val)) $inputsStr .= $val['value'];
+            $inputsStr .= "\");\r\n";
         }
         $code = str_replace('_input.set_', $inputsStr, $code);
 
         /*替换assertThat*/
         $assertionsStr = '';
-        foreach ($outputs as $key => $assertion) {
-            $assertionsStr .= '        assertThat(result.get(0).get' . ucfirst($assertion['property']) . "(), is(\"";
-            if (isset($assertion['value'])) $assertionsStr .= $assertion['value'];
+        foreach ($outputs as $key => $val) {
+            $assertionsStr .= '        assertThat(result.get(0).get' . ucfirst($val['resultMap']) . "(), is(\"";
+            if (key_exists('value', $val)) $assertionsStr .= $val['value'];
             $assertionsStr .= "\"));\r\n";
         }
         $code = str_replace('_assertions_', $assertionsStr, $code);

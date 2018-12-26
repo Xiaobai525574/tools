@@ -100,7 +100,7 @@ class Controller extends BaseController
 
             /*将映射名称写入查询字段数组中*/
             foreach ($select as $key => &$val) {
-                if ($val['alias']) {
+                if (key_exists('alias', $val) && !empty($val['alias'])) {
                     if ($val['alias'] == $arr['column']) {
                         $val['resultMap'] = $arr['property'];
                     }
@@ -117,6 +117,7 @@ class Controller extends BaseController
 
     protected function parseSqlXml($xml)
     {
+        if (!$xml) return $this->getSql();
         $xml = $this->strFilter($xml);
 
         /*解析数据库操作类型（select、delete、update、insert）*/
@@ -126,16 +127,16 @@ class Controller extends BaseController
         $this->setId(substr($xml, 12, 12));
 
         /*解析sql字符串（去除xml标签、去除sql注释、去除多余字符）*/
-        $xml = strip_tags($xml);
+        $start = strpos($xml, '>') + 2;
+        $len = strpos($xml, '</') - $start - 1;
+        $xml = substr($xml, $start, $len);
         $strpos = strpos($xml, 'FOR UPDATE');
         if ($strpos !== false) {
             $xml = substr($xml, 0, $strpos);
         } else {
             $strpos = strpos($xml, '--');
-            if ($strpos !== false) $xml = substr($xml, 0, $strpos);
+            if ($strpos !== false) $xml = substr($xml, 0, $strpos - 1);
         }
-        $xml = trim($xml);
-        if (!$xml) return $this->getSql();
 
         /*解析sql内容*/
         $sqlArr = $this->explodeSelectSql($xml);
@@ -264,6 +265,7 @@ class Controller extends BaseController
         if (strpos($str, 'AS') !== false) {
             list($str, $alias) = explode('AS', $str);
         }
+
         if (strpos($str, '(') !== false) {
             $str = [
                 'function' => $str,
@@ -276,6 +278,14 @@ class Controller extends BaseController
                 'alias' => $alias,
                 'tableAlias' => $tableAlias,
                 'tableName' => $this->toTableName($tableAlias)
+            ];
+        } else {
+            $table = $this->getFrom()[0];
+            $str = [
+                'name' => $str,
+                'alias' => $alias,
+                'tableAlias' => $table['alias'],
+                'tableName' => $table['name']
             ];
         }
 
@@ -301,6 +311,13 @@ class Controller extends BaseController
     protected function parseOrderBy($sql)
     {
 
+    }
+
+    protected function getAllRedFields()
+    {
+        $result = $this->toClassify($this->getWhereFields());
+
+        return $result;
     }
 
     protected function getWhereFields()
@@ -330,6 +347,27 @@ class Controller extends BaseController
                 $value[0]['parameter'] = $value[2]['parameter'];
                 $result[] = $value[0];
             }
+        }
+
+        return $result;
+    }
+
+    protected function getAllOrangeFields()
+    {
+        $fields = $this->getSelect();
+        foreach ($fields as $key => $field) {
+            if (!key_exists('name', $field)) unset($fields[$key]);
+        }
+        $fields = $this->toClassify($fields);
+
+        return $fields;
+    }
+
+    protected function toClassify($fields)
+    {
+        $result = [];
+        foreach ($fields as $key => $field) {
+            $result[$field['tableName']][] = $field;
         }
 
         return $result;
