@@ -119,7 +119,7 @@
         });
         $(".getCode").click(function () {
             $.ajax({
-                url: "{{url('select/getCodeByTables')}}",
+                url: "{{url('select/getCodeByParameters')}}",
                 type: "POST",
                 data: {
                     'id': $("#id").val(),

@@ -9,7 +9,9 @@ return [
         /*Excel格式*/
         'type' => 'xlsx',
         /*sql数据在Excel中的起始行*/
-        'startRow' => 2
+        'startRow' => 2,
+        /*表重命名处理页的title*/
+        'renameTableTitle' => '__RENAME_TABLE'
     ],
     'color' => [
         'red' => 'FF0000',

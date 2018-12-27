@@ -79,8 +79,8 @@ class sqlSheet extends Worksheet
     public function addSqlRow()
     {
         $highestRow = $this->getHighestRow();
-        $highesColumn = Coordinate::columnIndexFromString($this->getHighestColumn());
-        for ($column = 1; $column <= $highesColumn; $column++) {
+        $highestColumn = Coordinate::columnIndexFromString($this->getHighestColumn());
+        for ($column = 1; $column <= $highestColumn; $column++) {
             $this->setCellValueByColumnAndRow($column, $highestRow + 1
                 , $this->getCellByColumnAndRow($column, $highestRow));
         }
@@ -207,6 +207,12 @@ class sqlSheet extends Worksheet
         return $str;
     }
 
+    /**
+     * 获取某单元格的索引。根据单元格字符长度不同分别获取1位、2位、3位索引
+     * @param $column
+     * @param $row
+     * @return bool|\Illuminate\Config\Repository|int|mixed
+     */
     private function getSqlCellIndex($column, $row)
     {
         $fieldIndex = $this->getFieldsIndexes()[$column];
@@ -224,6 +230,10 @@ class sqlSheet extends Worksheet
         return $index;
     }
 
+    /**
+     * 获取字段索引集合（该sheet页第一行单元格的数据）
+     * @return array
+     */
     public function getFieldsIndexes()
     {
         return $this->fieldsIndexes;

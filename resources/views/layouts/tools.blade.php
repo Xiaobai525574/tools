@@ -30,7 +30,7 @@
         <ul class="pagination">
             <li @if($navActive == 'select') class="active" @endif><a href="{{url('select/index')}}">单表Select</a></li>
             <li @if($navActive == 'selects') class="active" @endif><a
-                        href="{{url('select/getExcelByTables')}}">多表Select</a></li>
+                        href="{{url('select/getExcelByParameters')}}">多表Select</a></li>
             <li @if($navActive == 'delete') class="active" @endif><a href="{{url('delete/index')}}">Delete</a></li>
             <li @if($navActive == 'log') class="active" @endif><a href="{{url('updateInfo')}}">更新日志</a></li>
         </ul>

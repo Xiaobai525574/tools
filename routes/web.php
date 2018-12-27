@@ -28,8 +28,8 @@ Route::prefix('/delete')->group(function () {
 Route::prefix('/select')->group(function () {
     Route::get('/index', 'Tools\\selectController@index');
     Route::post('/getExcel', 'Tools\\selectController@getExcel');
-    Route::any('/getExcelByTables', 'Tools\\selectController@getExcelByTables');
+    Route::any('/getExcelByParameters', 'Tools\\selectController@getExcelByParameters');
     Route::post('/getCode', 'Tools\\selectController@getCode');
-    Route::post('/getCodeByTables', 'Tools\\selectController@getCodeByTables');
+    Route::post('/getCodeByParameters', 'Tools\\selectController@getCodeByParameters');
 });
 

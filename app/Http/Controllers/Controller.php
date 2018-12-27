@@ -53,15 +53,26 @@ class Controller extends BaseController
         View::share('navActive', $navActive);
     }
 
+    /**
+     * 获取解析后的sql信息
+     * @return array
+     */
     protected function getSql()
     {
         return [
             'id' => $this->getId(),
-            'tables' => $this->getFrom(),
-            'wheres' => $this->getWhere()
+            'sqlType' => $this->getSqlType(),
+            'resultMap' => $this->getResultMap(),
+            'select' => $this->getSelect(),
+            'from' => $this->getFrom(),
+            'where' => $this->getWhere()
         ];
     }
 
+    /**
+     * 解析 resultMap、sql标签
+     * @param $xmls
+     */
     protected function parseXml($xmls)
     {
         $xmlsArr = $this->explodeXml($xmls);
@@ -73,6 +84,11 @@ class Controller extends BaseController
         }
     }
 
+    /**
+     * 分拆 resultMap、sql标签
+     * @param $xmls
+     * @return array
+     */
     protected function explodeXml($xmls)
     {
         if (strpos($xmls, '</resultMap>') !== false) {
@@ -83,6 +99,11 @@ class Controller extends BaseController
         return $xmls;
     }
 
+    /**
+     * 解析整个resultMap xml标签
+     * @param $xml
+     * @return array
+     */
     protected function parseResultMapXml($xml)
     {
         /*去除换行符*/
@@ -115,6 +136,11 @@ class Controller extends BaseController
         return $mapArr;
     }
 
+    /**
+     * 解析整个sql xml标签
+     * @param $xml
+     * @return array
+     */
     protected function parseSqlXml($xml)
     {
         if (!$xml) return $this->getSql();
@@ -190,6 +216,12 @@ class Controller extends BaseController
         return $result;
     }
 
+    /**
+     * 解析select关键字
+     * @param $sql
+     * @param bool $filter
+     * @return array|mixed|string
+     */
     protected function parseSelect($sql, $filter = false)
     {
         if (!$sql) return $sql;
@@ -232,6 +264,12 @@ class Controller extends BaseController
         return $result;
     }
 
+    /**
+     * 解析where关键字
+     * @param $sql
+     * @param bool $filter
+     * @return array|mixed|string
+     */
     protected function parseWhere($sql, $filter = false)
     {
         if (!$sql) return $sql;
@@ -259,6 +297,11 @@ class Controller extends BaseController
         return $wheres;
     }
 
+    /**
+     * 解析字段字符串 如："t1.ib_kcu_id","MAX(t3.sms_lyokhi_flg) AS sms_lyokhi_flg"
+     * @param $str
+     * @return array
+     */
     protected function parseField($str)
     {
         $alias = '';
@@ -292,6 +335,11 @@ class Controller extends BaseController
         return $str;
     }
 
+    /**
+     * 解析传入参数字符串 如："#{bankCd,jdbcType=CHAR}"
+     * @param $str
+     * @return array|bool|string
+     */
     protected function parseParameter($str)
     {
         $str = substr($str, strpos($str, '#{') + 2);
@@ -303,16 +351,28 @@ class Controller extends BaseController
         return $str;
     }
 
+    /**
+     * 解析groupby关键字
+     * @param $sql
+     */
     protected function parseGroupBy($sql)
     {
 
     }
 
+    /**
+     * 解析orderby关键字
+     * @param $sql
+     */
     protected function parseOrderBy($sql)
     {
 
     }
 
+    /**
+     * 获取所有标红的字段信息，并以表名分类
+     * @return array
+     */
     protected function getAllRedFields()
     {
         $result = $this->toClassify($this->getWhereFields());
@@ -320,6 +380,10 @@ class Controller extends BaseController
         return $result;
     }
 
+    /**
+     * 获取where条件中的字段
+     * @return array
+     */
     protected function getWhereFields()
     {
         $result = [];
@@ -335,23 +399,33 @@ class Controller extends BaseController
         return $result;
     }
 
+    /**
+     * 获取where条件中传入的参数集合并去重
+     * @return array
+     */
     protected function getWhereParameters()
     {
         $result = [];
         $where = $this->getWhere();
+        $uniqueArr = [];
         foreach ($where as $key => $value) {
-            if (key_exists('parameter', $value[0])) {
-                $value[2]['parameter'] = $value[0]['parameter'];
-                $result[] = $value[2];
-            } elseif (key_exists('parameter', $value[2])) {
-                $value[0]['parameter'] = $value[2]['parameter'];
-                $result[] = $value[0];
+            if (key_exists('parameter', $value[0]) || key_exists('parameter', $value[2])) {
+                $value = array_merge($value[0], $value[2]);
+                //去重
+                if (!in_array($value['parameter'], $uniqueArr)) {
+                    $uniqueArr[] = $value['parameter'];
+                    $result[] = $value;
+                }
             }
         }
 
         return $result;
     }
 
+    /**
+     * 获取所有标橙字段的信息，以表名进行分类
+     * @return array
+     */
     protected function getAllOrangeFields()
     {
         $fields = $this->getSelect();
@@ -363,11 +437,20 @@ class Controller extends BaseController
         return $fields;
     }
 
+    /**
+     * 以表名对字段进行分类
+     * @param $fields
+     * @return array
+     */
     protected function toClassify($fields)
     {
         $result = [];
+        $tables = $this->getFrom();
         foreach ($fields as $key => $field) {
             $result[$field['tableName']][] = $field;
+        }
+        foreach ($tables as $table) {
+            if (!key_exists($table['name'], $result)) $result[$table['name']] = [];
         }
 
         return $result;
@@ -390,6 +473,11 @@ class Controller extends BaseController
         return false;
     }
 
+    /**
+     * 字符创过滤，去除换行符、多余空格等
+     * @param $str
+     * @return mixed|string
+     */
     protected function strFilter($str)
     {
         /*去除换行符*/
