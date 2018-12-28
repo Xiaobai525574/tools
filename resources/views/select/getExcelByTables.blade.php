@@ -65,7 +65,7 @@
                 <input class="form-control" id="id" name="id" placeholder="id(例:execPKTS0005)">
             </div>
             <div class="col-md-2">
-                <input class="form-control" id="assertions" placeholder="resultMap(详见提示)">
+                <input class="form-control" id="outputs" placeholder="resultMap(详见提示)">
             </div>
             <div class="col-md-2">
                 <input class="form-control" id="inputs" placeholder="代码input(详见提示)">
@@ -73,17 +73,17 @@
         </div>
         <div class="row select-row select-table">
             <div class="col-md-2">
-                <input class="form-control" name="tableNames[]" placeholder="表名(例:tp_kuzjho_kydcen_knrkuz)">
+                <input class="form-control" name="tables[0][name]" placeholder="表名(例:tp_kuzjho_kydcen_knrkuz)">
             </div>
             <div class="col-md-2">
-                <input class="col-md-6 form-control" name="tableRows[]" placeholder="数据条数(例:6)">
+                <input class="col-md-6 form-control" name="tables[0][rows]" placeholder="数据条数(例:6)">
             </div>
             <div class="col-md-4">
-                <input class="col-md-6 form-control" name="tableWheres[]"
+                <input class="col-md-6 form-control" name="tables[0][red]"
                        placeholder="标红字段(详见提示)">
             </div>
             <div class="col-md-4">
-                <input class="col-md-6 form-control" name="tableSelects[]" placeholder="标橙字段(详见提示)">
+                <input class="col-md-6 form-control" name="tables[0][orange]" placeholder="标橙字段(详见提示)">
             </div>
         </div>
         <div class="row select-row select-submit">
@@ -109,6 +109,16 @@
     <script type="text/javascript">
         $("#addTable").click(function () {
             var table = $("#getExcel>.select-table:last").clone();
+            var a = table.find("input");
+            table.find("input").each(function (index) {
+                var name = $(this).attr('name');
+                var start = name.indexOf('[') + 1;
+                var end = name.indexOf(']');
+                var num = Number(name.substring(start, end)) + 1;
+                name = "tables[" + num + name.substr(end);
+                $(this).attr('name', name);
+
+            });
             $("#getExcel>.select-table:last").after(table);
         });
 
@@ -124,8 +134,8 @@
                 data: {
                     'id': $("#id").val(),
                     'inputs': $("#inputs").val(),
-                    'assertions': $("#assertions").val(),
-                    'num': $(this).attr('data-num')
+                    'outputs': $("#assertions").val(),
+                    'excelNum': $(this).attr('data-num')
                 },
                 success: function (data) {
                     if (data.status == "success") {

@@ -99,13 +99,16 @@ class sqlExcelService extends Spreadsheet
      */
     public function getActualName($title)
     {
-        $sheet = $this->getSheetByName(config('tools.excel.renameTableTitle'));
-        $highestRow = $sheet->getHighestRow();
+        $renameTable = config('tools.excel.renameTableTitle');
+        if ($this->sheetNameExists($renameTable)) {
+            $sheet = $this->getSheetByName($renameTable);
+            $highestRow = $sheet->getHighestRow();
 
-        for ($i = 2; $i <= $highestRow; $i++) {
-            $alias = $sheet->getCell('A' . $i)->getValue();
-            if ($alias == $title) {
-                $title = $sheet->getCell('B' . $i)->getValue();
+            for ($i = 2; $i <= $highestRow; $i++) {
+                $alias = $sheet->getCell('A' . $i)->getValue();
+                if ($alias == $title) {
+                    $title = $sheet->getCell('B' . $i)->getValue();
+                }
             }
         }
 

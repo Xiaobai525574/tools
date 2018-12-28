@@ -17,92 +17,6 @@ class selectController extends Controller
      */
     public function index()
     {
-        $a = <<<php
-<resultMap type="jp.co.nttdata.erm.base.biz.sql1a.dto.rsqs.RSQS2035Output" id="RSQS2035Output">
-        <result column="ikr_sqh_fil_knr_bng" property="ikkatsuKirokuSeikyuFileKanriNo"/>
-        <result column="fil_id" property="fileID"/>
-        <result column="krr_trk_cec_kbn" property="karitorokuKekkaKbnCd"/>
-        <result column="ikr_sqh_sin_kbn" property="ikkatsuKirokuSeikyuShinseiKbnCd"/>
-        <result column="fil_ukt_nji" property="fileUketsukeTime"/>
-        <result column="a01_rsh_bng" property="seikyusyaInfRiyosyaNo"/>
-        <result column="a01_hjnmei_cjnjgysha_mei" property="seikyusyaInfName"/>
-        <result column="a01_hjnmei_cjnjgyshamei_cna" property="seikyusyaInfNameKana"/>
-        <result column="a01_bsh_mei_tou" property="seikyusyaInfBusyoName"/>
-        <result column="a01_bsh_meitou_cna" property="seikyusyaInfBusyoNameKana"/>
-        <result column="a01_bnk_cod" property="seikyusyaInfBankCd"/>
-        <result column="a01_bnk_mei" property="seikyusyaInfBankName"/>
-        <result column="sqh_kns_sij_bun" property="seikyuKensuSeijo"/>
-        <result column="skn_kgk_sij_bun" property="saikenKingakuSeijo"/>
-        <result column="sub_fil_suu_sij_bun" property="subFileSeijo"/>
-        <result column="sub_fil_suu_err_bun" property="subFileError"/>
-        <result column="fil_mei" property="fileName"/>
-        <result column="err_fil_id" property="errFileID"/>
-        <result column="err_msg" property="errorMsg"/>
-        <result column="oks_gwa_cen_kkn_cod" property="okyakusamagawaCenterKakuninCd"/>
-        <result column="tst_flg" property="testFlg"/>
-        <result column="tci_knr_bng" property="tsuchiKanriNo"/>
-        <result column="tto_sha_smi" property="tantosyaShimei"/>
-        <result column="tto_sha_cmt" property="tantosyaComment"/>
-        <result column="krr_trk_iri_jii_nji" property="karitorokuIraiJitsushiTime"/>
-        <result column="sun_iri_jii_jok_kbn" property="syoninIraiJitsushiJokyoKbnCd"/>
-        <result column="hsy_mu0_juo_kof_umu_flg" property="hosyoNashiJotoKeikokuUmuFlg"/>
-        <result column="trhsak_msy_hyj_umu_flg" property="torihikisakiNameHyojiUmuFlg"/>
-        <result column="trhsak_knr_hit_sgy_acc_khi_flg" property="torihikisakiKanriHaitaSeigyoAccessKahiFlg"/>
-        <result column="trhsak_mtr_kns" property="torihikisakiMitourokuKensu"/>
-        <result column="fct_skn_snz_flg" property="factoringSaikenSonzaiFlg"/>
-    </resultMap>
-    <select id="execRSQS2035" parameterType="jp.co.nttdata.erm.base.biz.sql1a.dto.rsqs.RSQS2035Input" resultMap="RSQS2035Output">
-        SELECT
-                t1.ikr_sqh_fil_knr_bng
-                ,t1.fil_id
-                ,t1.krr_trk_cec_kbn
-                ,t1.ikr_sqh_sin_kbn
-                ,t1.fil_ukt_nji
-                ,t1.a01_rsh_bng
-                ,t1.a01_hjnmei_cjnjgysha_mei
-                ,t1.a01_hjnmei_cjnjgyshamei_cna
-                ,t1.a01_bsh_mei_tou
-                ,t1.a01_bsh_meitou_cna
-                ,t1.a01_bnk_cod
-                ,t1.a01_bnk_mei
-                ,t1.sqh_kns_sij_bun
-                ,t1.skn_kgk_sij_bun
-                ,t1.sub_fil_suu_sij_bun
-                ,t1.sub_fil_suu_err_bun
-                ,t1.fil_mei
-                ,t1.err_fil_id
-                ,t1.err_msg
-                ,t1.oks_gwa_cen_kkn_cod
-                ,t1.tst_flg
-                ,t1.tci_knr_bng
-                ,t1.tto_sha_smi
-                ,t1.tto_sha_cmt
-                ,t1.krr_trk_iri_jii_nji
-                ,t1.sun_iri_jii_jok_kbn
-                ,t1.hsy_mu0_juo_kof_umu_flg
-                ,t1.trhsak_msy_hyj_umu_flg
-                ,t1.trhsak_knr_hit_sgy_acc_khi_flg
-                ,t1.trhsak_mtr_kns
-                ,t1.fct_skn_snz_flg
-            FROM
-                ${featureSchema}.tr_not_dok_sqh_you_ikr_fil_knr t1
-                ,${featureSchema}.tr_not_dok_sqh_you_ikr_sub_fil_knr t2
-                ,${featureSchema}.te_ivttci_jho t3
-            WHERE
-                t2.bnk_cod = t3.bnk_cod
-                AND t2.ikt_sqh_bng = t3.sqh_bng
-                AND t1.bnk_cod = t2.bnk_cod
-                AND t1.ikr_sqh_fil_knr_bng = t2.ikr_sqh_fil_knr_bng
-                AND t3.tci_knr_bng = #{tsuchiKanriNo,jdbcType=CHAR}
-                AND t3.bnk_cod = #{bankCd,jdbcType=CHAR}
-                AND t3.skj_flg = #{sakujoFlg,jdbcType=NUMERIC}
-                AND t2.skj_flg = #{sakujoFlg,jdbcType=NUMERIC}
-                AND t1.skj_flg = #{sakujoFlg,jdbcType=NUMERIC}
-            -- WITH OPTION LOCK_MODE(FL)
-         -- RSQS2035
-    </select>
-php;
-
         return view('select/index');
     }
 
@@ -154,36 +68,21 @@ php;
     public function getExcelByParameters(Request $request, sqlExcelService $sqlExcel)
     {
         if ($request->method() == 'GET') return view('select/getExcelByTables');
-
+        $tables = $this->formatInput($request->input('tables'));
         //生成excel的保存路径
         $savePath = $this->getSavePath($request->input('id'), $request->input('excelNum'));
-        $rows = $request->input('tableRows');
-        $whereFields = $request->input('tableWheres');
-        $selectFields = $request->input('tableSelects');
-        $sqlExcel->getSqlExcel($request->input('tableNames'));
-        if ($sqlExcel->getSheetNames()[0] != 'sqlSheet') {
-            foreach ($sqlExcel->getSqlSheetIterator() as $key => $sheet) {
-                $sheet->addSqlRows($rows[$key] - 1)
-                    ->uniqueSqlRows();
-
-                if ($whereFields[$key]) {
-                    if (strpos($whereFields[$key], '=') !== false) {
-                        $whereFields[$key] = array_column(array_column($this->parseWhere($whereFields[$key]), 0), 1);
-                    } else {
-                        $whereFields[$key] = explode(',', str_replace(' ', '', $whereFields[$key]));
-                    }
-                    $sheet->redData($whereFields[$key]);
-                }
-
-                if ($selectFields[$key]) {
-                    $selectFields[$key] = array_column($this->parseSelect($selectFields[$key]), 1);
-                    $sheet->orangeData($selectFields[$key]);
-                }
-
-                $sheet->setSelectedCell('A1');
-            }
-            $sqlExcel->setActiveSheetIndex(0);
+        $sqlExcel->getSqlExcel(array_keys($tables));
+        if ($sqlExcel->getSheetNames()[0] == 'sqlSheet') abort(403, '数据库表未找到');
+        foreach ($sqlExcel->getSqlSheetIterator() as $key => $sheet) {
+            $actualName = $sqlExcel->getActualName($sheet->getTitle());
+            $table = $tables[$actualName];
+            $sheet->addSqlRows($table['rows'] - 1)
+                ->uniqueSqlRows()
+                ->redData($table['red'])
+                ->orangeData($table['orange'])
+                ->setSelectedCell('A1');
         }
+        $sqlExcel->setActiveSheetIndex(0);
         $sqlExcel->saveSqlExcel($savePath);
 
         return Storage::download($savePath);
@@ -240,6 +139,23 @@ php;
     }
 
     /**
+     * 格式化输入数据
+     * @param $input
+     * @return mixed
+     */
+    private function formatInput($input)
+    {
+        $result = [];
+        foreach ($input as $key => $value) {
+            $value['red'] = $this->parseRedParameter($value['red']);
+            $value['orange'] = $this->parseOrangeParameter($value['orange']);
+            $result[$value['name']] = $value;
+        }
+
+        return $result;
+    }
+
+    /**
      * 获取代码输入字段集合
      * @param $num
      * @return array
@@ -266,6 +182,7 @@ php;
     {
         $savePath = $this->getSavePath($this->getId(), $num);
         $fields = $this->getSelect();
+        $result = [];
         foreach ($fields as $key => $field) {
             if (!key_exists('name', $field)) {
                 $result[] = $fields[$key];
@@ -323,6 +240,35 @@ php;
     {
         return config('tools.storage.selectPath') . 'setup_'
             . $id . '_' . $num . '.' . config('tools.excel.type');
+    }
+
+    /**
+     * 解析传入参数：标红字段
+     * @param $red
+     * @return array
+     */
+    private function parseRedParameter($red)
+    {
+        if (strpos($red, '=') !== false) {
+            $red = $this->parseWhere($red, true)->getWhereFields();
+        } else {
+            $red = explode(',', str_replace(' ', '', $red));
+            foreach ($red as $key => &$value) {
+                $value = ['name' => $value];
+            }
+        }
+
+        return $red;
+    }
+
+    /**
+     * 解析传入参数：标橙字段
+     * @param $orange
+     * @return array
+     */
+    private function parseOrangeParameter($orange)
+    {
+        return $this->parseSelect($orange, true)->getSelectFields();
     }
 
     /**

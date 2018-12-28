@@ -54,27 +54,13 @@ class Controller extends BaseController
     }
 
     /**
-     * 获取解析后的sql信息
-     * @return array
-     */
-    protected function getSql()
-    {
-        return [
-            'id' => $this->getId(),
-            'sqlType' => $this->getSqlType(),
-            'resultMap' => $this->getResultMap(),
-            'select' => $this->getSelect(),
-            'from' => $this->getFrom(),
-            'where' => $this->getWhere()
-        ];
-    }
-
-    /**
      * 解析 resultMap、sql标签
      * @param $xmls
+     * @return $this
      */
     protected function parseXml($xmls)
     {
+        if (!$xmls) return $xmls;
         $xmlsArr = $this->explodeXml($xmls);
         if (is_array($xmlsArr)) {
             $this->parseSqlXml($xmlsArr[1]);
@@ -99,13 +85,20 @@ class Controller extends BaseController
         return $xmls;
     }
 
+    protected function setResultMap($resultMap)
+    {
+        $this->resultMap = $this->parseResultMapXml($resultMap);
+        return $this;
+    }
+
     /**
      * 解析整个resultMap xml标签
      * @param $xml
-     * @return array
+     * @return $this
      */
     protected function parseResultMapXml($xml)
     {
+        if (!$xml) return $xml;
         /*去除换行符*/
         $xml = str_replace(array("\r\n", "\r", "\n"), ' ', $xml);
         /*去除多余空格*/
@@ -139,11 +132,11 @@ class Controller extends BaseController
     /**
      * 解析整个sql xml标签
      * @param $xml
-     * @return array
+     * @return $this
      */
     protected function parseSqlXml($xml)
     {
-        if (!$xml) return $this->getSql();
+        if (!$xml) return $xml;
         $xml = $this->strFilter($xml);
 
         /*解析数据库操作类型（select、delete、update、insert）*/
@@ -187,6 +180,7 @@ class Controller extends BaseController
     protected function explodeSelectSql($sql)
     {
         $result = [];
+        if (!$sql) return $result;
         $posForm = strpos($sql, 'FROM');
         $result['Select'] = substr($sql, 7, $posForm - 8);
         $posWhere = strpos($sql, 'WHERE');
@@ -216,11 +210,17 @@ class Controller extends BaseController
         return $result;
     }
 
+    protected function setSelect($select, $filter = false)
+    {
+        $this->select = $this->parseSelect($select, $filter);
+        return $this;
+    }
+
     /**
      * 解析select关键字
      * @param $sql
      * @param bool $filter
-     * @return array|mixed|string
+     * @return $this
      */
     protected function parseSelect($sql, $filter = false)
     {
@@ -238,11 +238,17 @@ class Controller extends BaseController
         return $result;
     }
 
+    protected function setFrom($from, $filter = false)
+    {
+        $this->from = $this->parseFrom($from, $filter);
+        return $this;
+    }
+
     /**
      * 解析from关键字
      * @param $sql
      * @param bool $filter 是否开启过滤，默认关闭
-     * @return array|mixed|string
+     * @return $this
      */
     protected function parseFrom($sql, $filter = false)
     {
@@ -264,11 +270,17 @@ class Controller extends BaseController
         return $result;
     }
 
+    protected function setWhere($where, $filter)
+    {
+        $this->where = $this->parseWhere($where, $filter);
+        return $this;
+    }
+
     /**
      * 解析where关键字
      * @param $sql
      * @param bool $filter
-     * @return array|mixed|string
+     * @return $this
      */
     protected function parseWhere($sql, $filter = false)
     {
@@ -294,6 +306,7 @@ class Controller extends BaseController
             }
         }
         $this->setWhere($wheres);
+
         return $wheres;
     }
 
@@ -354,19 +367,21 @@ class Controller extends BaseController
     /**
      * 解析groupby关键字
      * @param $sql
+     * @return $this
      */
     protected function parseGroupBy($sql)
     {
-
+        if (!$sql) return $sql;
     }
 
     /**
      * 解析orderby关键字
      * @param $sql
+     * @return $this
      */
     protected function parseOrderBy($sql)
     {
-
+        if (!$sql) return $sql;
     }
 
     /**
@@ -438,6 +453,20 @@ class Controller extends BaseController
     }
 
     /**
+     * 获取所有select条件中的字段
+     * @return array
+     */
+    protected function getSelectFields()
+    {
+        $fields = $this->getSelect();
+        foreach ($fields as $key => $field) {
+            if (!key_exists('name', $field)) unset($fields[$key]);
+        }
+
+        return $fields;
+    }
+
+    /**
      * 以表名对字段进行分类
      * @param $fields
      * @return array
@@ -488,6 +517,22 @@ class Controller extends BaseController
         return $str;
     }
 
+    /**
+     * 获取解析后的sql信息
+     * @return array
+     */
+    protected function getSql()
+    {
+        return [
+            'id' => $this->getId(),
+            'sqlType' => $this->getSqlType(),
+            'resultMap' => $this->getResultMap(),
+            'select' => $this->getSelect(),
+            'from' => $this->getFrom(),
+            'where' => $this->getWhere()
+        ];
+    }
+
     protected function getId()
     {
         return $this->id;
@@ -496,16 +541,12 @@ class Controller extends BaseController
     protected function setId($id)
     {
         $this->id = $id;
+        return $this;
     }
 
     protected function getResultMap()
     {
         return $this->resultMap;
-    }
-
-    protected function setResultMap($resultMap)
-    {
-        $this->resultMap = $resultMap;
     }
 
     protected function getSqlType()
@@ -516,6 +557,7 @@ class Controller extends BaseController
     protected function setSqlType($sqlType)
     {
         $this->sqlType = $sqlType;
+        return $this;
     }
 
     protected function getSelect()
@@ -523,29 +565,14 @@ class Controller extends BaseController
         return $this->select;
     }
 
-    protected function setSelect($select)
-    {
-        $this->select = $select;
-    }
-
     protected function getFrom()
     {
         return $this->from;
     }
 
-    protected function setFrom($from)
-    {
-        $this->from = $from;
-    }
-
     protected function getWhere()
     {
         return $this->where;
-    }
-
-    protected function setWhere($where)
-    {
-        $this->where = $where;
     }
 
 }
