@@ -56,7 +56,7 @@
                 type: "POST",
                 data: {
                     'xml': $("#xml").val(),
-                    'num': $(this).attr('data-num')
+                    'excelNum': $(this).attr('data-num')
                 },
                 success: function (data) {
                     if (data.status == "success") {

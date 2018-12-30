@@ -9,7 +9,7 @@
 namespace App\Http\Services\SqlService;
 
 
-class InsertSql
+class SqlInsert
 {
 
 }

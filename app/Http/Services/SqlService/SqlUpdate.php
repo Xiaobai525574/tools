@@ -9,7 +9,7 @@
 namespace App\Http\Services\SqlService;
 
 
-class DeleteSql
+class SqlUpdate
 {
 
 }
