@@ -47,6 +47,12 @@ class SqlSheet extends Worksheet
     private $currentRow = 2;
 
     /**
+     * 真实表名
+     * @var string
+     */
+    public $actualName = '';
+
+    /**
      * 初始化列：列宽、数据标志位（长度为1的字段和长度等于2和长度大于2的字段用两个计数器去标志）
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
@@ -74,6 +80,13 @@ class SqlSheet extends Worksheet
         }
         $this->setFieldsIndexes($fieldsIndexes);
 
+        return $this;
+    }
+
+    public function primaryKey($actualName = null)
+    {
+        /*todo:标注主键*/
+        if (!$actualName);
         return $this;
     }
 
