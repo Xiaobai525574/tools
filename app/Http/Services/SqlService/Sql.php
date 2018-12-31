@@ -270,6 +270,7 @@ class Sql
             $result = $this->parsePoint($str);
         } else {
             $result['name'] = trim($str);
+            $result['tableName'] = $this->getFrom()[0]['name'];
         }
         $this->resetField();
 
