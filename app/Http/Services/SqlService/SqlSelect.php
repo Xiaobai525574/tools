@@ -106,7 +106,6 @@ class SqlSelect extends Sql
         ];
     }
 
-
     /**
      * 解析 resultMap、sql标签
      * @param $xml

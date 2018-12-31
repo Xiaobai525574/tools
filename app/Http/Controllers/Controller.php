@@ -8,35 +8,6 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\View;
 
-class Controller extends BaseController
-{
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-
-    public function __construct()
-    {
-        $url = url()->current();
-        $navActive = '';
-        switch ($url) {
-            case url('select/index'):
-                $navActive = 'select';
-                break;
-            case url('select/getExcelByTables'):
-                $navActive = 'selects';
-                break;
-            case url('delete/index'):
-                $navActive = 'delete';
-                break;
-            case url('/updateInfo'):
-                $navActive = 'log';
-                break;
-            default:
-                break;
-        }
-        View::share('navActive', $navActive);
-    }
-
-}
-
 /**
  *                       .::::.
  *                     .::::::::.
@@ -58,3 +29,32 @@ class Controller extends BaseController
  *                       '.:::::'                    ':'````..
  *
  */
+
+class Controller extends BaseController
+{
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    public function __construct()
+    {
+        $url = url()->current();
+        $navActive = '';
+        switch ($url) {
+            case url('select/index'):
+                $navActive = 'select';
+                break;
+            case url('select/getExcelByParameters'):
+                $navActive = 'selects';
+                break;
+            case url('delete/index'):
+                $navActive = 'delete';
+                break;
+            case url('/updateInfo'):
+                $navActive = 'log';
+                break;
+            default:
+                break;
+        }
+        View::share('navActive', $navActive);
+    }
+
+}

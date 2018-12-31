@@ -107,7 +107,6 @@ class Sql
         return $field;
     }
 
-
     public function from($from, $filter = false)
     {
         if (!$from) return $this;
@@ -276,7 +275,6 @@ class Sql
 
         return $result;
     }
-
 
     /**
      * 解析AS别名 如：SUM(COALESCE(skn_kgk, 0)) AS kingaku

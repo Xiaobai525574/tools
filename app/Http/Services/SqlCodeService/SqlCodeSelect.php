@@ -2,16 +2,37 @@
 /**
  * Created by PhpStorm.
  * User: user
- * Date: 2018/12/17
- * Time: 14:24
+ * Date: 2018/12/31
+ * Time: 8:56
  */
 
-namespace App\Http\Services;
+namespace App\Http\Services\SqlCodeService;
 
+/**code is far away from bug with the animal protecting
+ *  ┏┓　　　┏┓
+ *┏┛┻━━━┛┻┓
+ *┃　　　　　　　┃ 　
+ *┃　　　━　　　┃
+ *┃　┳┛　┗┳　┃
+ *┃　　　　　　　┃
+ *┃　　　┻　　　┃
+ *┃　　　　　　　┃
+ *┗━┓　　　┏━┛
+ *　　┃　　　┃神兽保佑
+ *　　┃　　　┃代码无BUG！
+ *　　┃　　　┗━━━┓
+ *　　┃　　　　　　　┣┓
+ *　　┃　　　　　　　┏┛
+ *　　┗┓┓┏━┳┓┏┛
+ *　　　┃┫┫　┃┫┫
+ *　　　┗┻┛　┗┻┛
+ *　　　
+ */
 
-class CodeService
+class SqlCodeSelect extends SqlCode
 {
 
+    /*select代码模板*/
     private $selectCode = <<<php
     /**
      * <b>[ケース観点]</b><br>
@@ -64,6 +85,7 @@ php;
      * @param $inputs
      * @param $outputs
      * @return mixed|string
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     public function makeSelectCode($id, $num, $inputs, $outputs)
     {
@@ -78,24 +100,54 @@ php;
         $code = str_replace('_num_', $num, $code);
 
         /*替换input.set*/
+        $inputsStr = $this->makeInputsCode($inputs);
+        $code = str_replace('_input.set_', $inputsStr, $code);
+
+        /*替换assertThat*/
+        $assertionsStr = $this->makeOutputsCode($outputs);
+        $code = str_replace('_assertions_', $assertionsStr, $code);
+
+        return $code;
+    }
+
+    /**
+     * 生成inputs代码
+     * @param $inputs
+     * @return string
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+    public function makeInputsCode($inputs)
+    {
+        if (!$inputs) return '';
+        $inputs = $this->getValuesFromExcel($inputs);
         $inputsStr = '';
         foreach ($inputs as $key => $val) {
             $inputsStr .= '        input.set' . ucfirst($val['parameter']) . "(\"";
             if (key_exists('value', $val)) $inputsStr .= $val['value'];
             $inputsStr .= "\");\r\n";
         }
-        $code = str_replace('_input.set_', $inputsStr, $code);
 
-        /*替换assertThat*/
-        $assertionsStr = '';
+        return $inputsStr;
+    }
+
+    /**
+     * 生成outputs代码
+     * @param $outputs
+     * @return string
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+    public function makeOutputsCode($outputs)
+    {
+        if (!$outputs) return '';
+        $outputs = $this->getValuesFromExcel($outputs);
+        $outputsStr = '';
         foreach ($outputs as $key => $val) {
-            $assertionsStr .= '        assertThat(result.get(0).get' . ucfirst($val['resultMap']) . "(), is(\"";
-            if (key_exists('value', $val)) $assertionsStr .= $val['value'];
-            $assertionsStr .= "\"));\r\n";
+            $outputsStr .= '        assertThat(result.get(0).get' . ucfirst($val['resultMap']) . "(), is(\"";
+            if (key_exists('value', $val)) $outputsStr .= $val['value'];
+            $outputsStr .= "\"));\r\n";
         }
-        $code = str_replace('_assertions_', $assertionsStr, $code);
 
-        return $code;
+        return $outputsStr;
     }
 
 }

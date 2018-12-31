@@ -3,12 +3,33 @@
 namespace App\Http\Controllers\Tools;
 
 use App\Http\Controllers\Controller;
-use App\Http\Services\SqlCodeService\SqlCode;
+use App\Http\Services\SqlCodeService\SqlCodeSelect;
 use App\Http\Services\SqlExcelService\SqlExcel;
 use App\Http\Services\SqlService\SqlSelect;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+
+/**code is far away from bug with the animal protecting
+ *  ┏┓　　　┏┓
+ *┏┛┻━━━┛┻┓
+ *┃　　　　　　　┃ 　
+ *┃　　　━　　　┃
+ *┃　┳┛　┗┳　┃
+ *┃　　　　　　　┃
+ *┃　　　┻　　　┃
+ *┃　　　　　　　┃
+ *┗━┓　　　┏━┛
+ *　　┃　　　┃神兽保佑
+ *　　┃　　　┃代码无BUG！
+ *　　┃　　　┗━━━┓
+ *　　┃　　　　　　　┣┓
+ *　　┃　　　　　　　┏┛
+ *　　┗┓┓┏━┳┓┏┛
+ *　　　┃┫┫　┃┫┫
+ *　　　┗┻┛　┗┻┛
+ *　　　
+ */
 
 class selectController extends Controller
 {
@@ -27,6 +48,9 @@ class selectController extends Controller
      * @param SqlSelect $select
      * @param SqlExcel $sqlExcel
      * @return mixed
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     public function getExcel(Request $request, SqlSelect $select, SqlExcel $sqlExcel)
     {
@@ -72,7 +96,7 @@ class selectController extends Controller
     {
         if ($request->method() == 'GET') return view('select/getExcelByTables');
 
-        $id = $request->input('id');
+        $id = trim($request->input('id'));
         $excelNum = $request->input('excelNum');
         $tables = $this->formatTables($request->input('tables'));
         //生成excel的保存路径
@@ -99,10 +123,12 @@ class selectController extends Controller
      * 获取代码模板
      * @param Request $request
      * @param SqlSelect $select
-     * @param SqlCode $sqlCode
+     * @param SqlCodeSelect $sqlCodeSelect
      * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function getCode(Request $request, SqlSelect $select, SqlCode $sqlCode)
+    public function getCode(Request $request, SqlSelect $select, SqlCodeSelect $sqlCodeSelect)
     {
         //处理sql字符串
         $select->parseXml($request->input('xml'));
@@ -114,10 +140,10 @@ class selectController extends Controller
         $excelPath = $this->getSavePath($select->getId(), $excelNum);
         if (Storage::disk('local')->exists($excelPath)) {
             $sqlExcel = IOFactory::load(SqlExcel::getAPath($excelPath));
-            $sqlCode->setExcel($sqlExcel);
-            $inputs = $select->groupFields($select->getWhereParameters());
-            $outputs = $select->groupFields($select->getSelect());
-            $code = $sqlCode->makeSelectCode(substr($select->getId(), 4), $excelNum, $inputs, $outputs);
+            $sqlCodeSelect->setExcel($sqlExcel);
+            $inputs = $select->getWhereParameters();
+            $outputs = $select->getSelect();
+            $code = $sqlCodeSelect->makeSelectCode(substr($select->getId(), 4), $excelNum, $inputs, $outputs);
             $result = [
                 'status' => 'success',
                 'info' => $code
@@ -130,20 +156,17 @@ class selectController extends Controller
     /**
      * 通过参数获取模板
      * @param Request $request
-     * @param CodeService $codeService
+     * @param SqlCodeSelect $sqlCodeSelect
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
-     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public function getCodeByParameters(Request $request, CodeService $codeService)
+    public function getCodeByParameters(Request $request, SqlCodeSelect $sqlCodeSelect)
     {
-        $num = $request->input('num');
+        $num = $request->input('excelNum');
         $id = $request->input('id');
         $inputs = $this->parseInputsParameter($request->input('inputs'));
-        $resultMap = $this->parseResultMapXml($request->input('assertions'));
-        $savePath = $this->getSavePath($id, $num);
-        $assertions = $this->getLastRowValues($savePath, $resultMap, $inputs);
-        $code = $codeService->makeSelectCode(substr($id, 4), $num, $inputs, $assertions);
+        $outputs = $this->parseOutputsParameter($request->input('outputs'));
+        $code = $sqlCodeSelect->makeSelectCode(substr($id, 4), $num, $inputs, $outputs);
 
         $result = [
             'status' => 'success',
@@ -161,6 +184,8 @@ class selectController extends Controller
     {
         $result = [];
         foreach ($input as $key => $value) {
+            $value['name'] = trim($value['name']);
+            $value['rows'] = trim($value['rows']);
             $value['red'] = $this->parseRedParameter($value['red']);
             $value['orange'] = $this->parseOrangeParameter($value['orange']);
             $result[$value['name']] = $value;
@@ -207,13 +232,39 @@ class selectController extends Controller
      */
     private function parseInputsParameter($inputs)
     {
+        if (!$inputs) return false;
+
         $inputsArr = [];
         do {
             $inputs = substr($inputs, strpos($inputs, '#{') + 2);
-            $inputsArr[] = substr($inputs, 0, strpos($inputs, ','));
+            $inputs = substr($inputs, 0, strpos($inputs, ','));
+            $inputsArr[] = [
+                'parameter' => $inputs
+            ];
         } while (strpos($inputs, '#{') !== false);
 
         return $inputsArr;
+    }
+
+    /**
+     * 解析传入参数：outputs
+     * @param $outputs
+     * @return array
+     */
+    private function parseOutputsParameter($outputs)
+    {
+        if (!$outputs) return false;
+
+        $outputsArr = [];
+        $sqlSelect = new SqlSelect();
+        $outputs = $sqlSelect->parseResultMapXml($outputs);
+        foreach ($outputs as $output) {
+            $outputsArr[] = [
+                'resultMap' => $output['property']
+            ];
+        }
+
+        return $outputsArr;
     }
 
     /**
@@ -230,23 +281,3 @@ class selectController extends Controller
 
 }
 
-/**code is far away from bug with the animal protecting
- *  ┏┓　　　┏┓
- *┏┛┻━━━┛┻┓
- *┃　　　　　　　┃ 　
- *┃　　　━　　　┃
- *┃　┳┛　┗┳　┃
- *┃　　　　　　　┃
- *┃　　　┻　　　┃
- *┃　　　　　　　┃
- *┗━┓　　　┏━┛
- *　　┃　　　┃神兽保佑
- *　　┃　　　┃代码无BUG！
- *　　┃　　　┗━━━┓
- *　　┃　　　　　　　┣┓
- *　　┃　　　　　　　┏┛
- *　　┗┓┓┏━┳┓┏┛
- *　　　┃┫┫　┃┫┫
- *　　　┗┻┛　┗┻┛
- *　　　
- */

@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use App\Http\Services\CodeService;
-use App\Http\Services\sqlExcelService;
+use App\Http\Services\SqlCodeService\SqlCodeSelect;
+use App\Http\Services\SqlExcelService\SqlExcel;
+use App\Http\Services\SqlService\SqlSelect;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,12 +27,16 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         /*注册Excel处理类*/
-        $this->app->bind(sqlExcelService::class, function () {
-            return new sqlExcelService();
+        $this->app->bind(SqlExcel::class, function () {
+            return new SqlExcel();
         });
-        /*注册代码处理类*/
-        $this->app->bind(CodeService::class, function () {
-            return new CodeService();
+        /*注册select代码处理类*/
+        $this->app->bind(SqlCodeSelect::class, function () {
+            return new SqlCodeSelect();
+        });
+        /*注册select sql处理类*/
+        $this->app->bind(SqlSelect::class, function () {
+            return new SqlSelect();
         });
 
     }

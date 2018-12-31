@@ -34,7 +34,7 @@
                     <span class="bg-info">标红支持输入方式：</span>
                         1、逗号分隔(有无空格都没关系，不支持换行、表别名):
                         "bnk_cod,    skj_flg"
-                        2、xml文件直接复制代码（有无空格、换行、表别名、重复字段都没关系，<span class="bg-danger">但字段名（例：t3.bnk_cod）必须在"="左边）</span>:
+                        2、xml文件直接复制代码（有无空格、换行、表别名、重复字段、字段名位置在“=”左边或者右边都没关系:
                         "t3.bnk_cod = #{bankCd,jdbcType=CHAR}
                         AND t3.skj_flg = #{sakujoFlg,jdbcType=NUMERIC}"
                     <span class="bg-info">resultMap Xml支持输入方式：</span>
@@ -134,7 +134,7 @@
                 data: {
                     'id': $("#id").val(),
                     'inputs': $("#inputs").val(),
-                    'outputs': $("#assertions").val(),
+                    'outputs': $("#outputs").val(),
                     'excelNum': $(this).attr('data-num')
                 },
                 success: function (data) {

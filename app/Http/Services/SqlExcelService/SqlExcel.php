@@ -8,9 +8,11 @@
 
 namespace App\Http\Services\SqlExcelService;
 
+use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
  *
@@ -35,8 +37,68 @@ use Illuminate\Support\Facades\Storage;
  *
  * ━━━━━━感觉萌萌哒━━━━━━
  */
+
 class SqlExcel extends Spreadsheet
 {
+
+    /**
+     * 静态方法：通过真实表名，获取对应的sheet页
+     * @param $actualName
+     * @param Spreadsheet $excel
+     * @return Worksheet mixed
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+    public static function getSheetByActualNameStatic($actualName, $excel)
+    {
+        $sheetName = SqlExcel::getSheetNameStatic($actualName, $excel);
+        return $excel->getSheetByName($sheetName);
+    }
+
+    /**
+     * 静态方法：根据所给真实表名，获取sheet页名称
+     * @param $actualName
+     * @param Spreadsheet $excel
+     * @return mixed
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+    public static function getSheetNameStatic($actualName, $excel)
+    {
+        $sheetName = $actualName;
+        $renameTable = config('tools.excel.renameTableTitle');
+        if ($excel->sheetNameExists($renameTable)) {
+            $sheet = $excel->getSheetByName($renameTable);
+            $highestRow = $sheet->getHighestRow();
+
+            for ($i = 2; $i <= $highestRow; $i++) {
+                $value = $sheet->getCell('B' . $i)->getValue();
+                if ($value == $actualName) {
+                    $sheetName = $sheet->getCell('A' . $i)->getValue();
+                }
+            }
+        }
+
+        return $sheetName;
+    }
+
+    /**
+     * 获取相应的绝对路径
+     * @param $path
+     * @return string
+     */
+    public static function getAPath($path)
+    {
+        return config('filesystems.disks.local.root') . $path;
+    }
+
+    /**
+     * 获取sqlExcel模板存放路径
+     * @param $name
+     * @return string
+     */
+    public static function getTplExcelPath($name)
+    {
+        return config('tools.storage.tablesPath') . $name . '.' . config('tools.excel.type');
+    }
 
     /**
      * 根据表名数组获取包含个表sheet页的Excel
@@ -51,7 +113,7 @@ class SqlExcel extends Spreadsheet
         $this->removeSheetByIndex(0);
         foreach ($tplExcelNames as $key => $name) {
             if (!$name) continue;
-            $tplExcelPath = $this->getSqlEXcelPath($name);
+            $tplExcelPath = $this->getTplExcelPath($name);
             /*解决表名过长问题*/
             $sqlSheet = $this->makeSqlSheet($name);
             $this->addSheet($sqlSheet);
@@ -70,7 +132,6 @@ class SqlExcel extends Spreadsheet
         return $this;
     }
 
-
     /**
      * 保存sqlExcel到本地
      * @param $path
@@ -85,29 +146,10 @@ class SqlExcel extends Spreadsheet
     }
 
     /**
-     * 获取相应的绝对路径
-     * @param $path
-     * @return string
-     */
-    public static function getAPath($path)
-    {
-        return config('filesystems.disks.local.root') . $path;
-    }
-
-    /**
-     * 获取sqlExcel模板存放路径
-     * @param $name
-     * @return string
-     */
-    public static function getSqlExcelPath($name)
-    {
-        return config('tools.storage.tablesPath') . $name . '.' . config('tools.excel.type');
-    }
-
-    /**
      * 通过真实表名，获取对应的sheet页
      * @param $actualName
-     * @return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+     * @return SqlSheet
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     public function getSheetByActualName($actualName)
     {
@@ -143,7 +185,8 @@ class SqlExcel extends Spreadsheet
     /**
      * 根据所给真实表名，获取sheet页名称
      * @param $actualName
-     * @return mixed|string
+     * @return mixed
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     public function getSheetName($actualName)
     {

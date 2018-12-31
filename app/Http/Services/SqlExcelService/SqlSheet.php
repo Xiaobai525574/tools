@@ -14,7 +14,6 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-
 /**
  *　　　　　　　　┏┓　　　┏┓+ +
  *　　　　　　　┏┛┻━━━┛┻┓ + +
@@ -38,7 +37,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  *　　　　　　　　　　┃┫┫　┃┫┫
  *　　　　　　　　　　┗┻┛　┗┻┛+ + + +
  */
-
 
 class SqlSheet extends Worksheet
 {
