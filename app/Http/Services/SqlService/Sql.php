@@ -148,9 +148,9 @@ class Sql
 
     /**
      * 解析where关键字
-     * @param $sql
      * @param bool $filter 是否开启过滤，默认关闭
-     * @return $this
+     * @param $sql
+     * @return array|bool
      */
     public function parseWhere($sql, $filter = false)
     {
@@ -169,7 +169,7 @@ class Sql
                 if (strpos($where[2], '#{') !== false) {
                     $where[2] = $this->parseParameter($where[2]);
                 } else {
-                    $where[2] = $this->parseField($where[2]);
+                    $where[2] = $this->parseField($where[2], true);
                 }
             }
         }
@@ -256,9 +256,10 @@ class Sql
     /**
      * 解析字段字符串 如："t1.ib_kcu_id","MAX(t3.sms_lyokhi_flg) AS sms_lyokhi_flg"
      * @param $str
-     * @return array
+     * @param bool $isValue 该字符串是否为常量
+     * @return array|mixed
      */
-    protected function parseField($str)
+    protected function parseField($str, $isValue = false)
     {
         $result = $this->resetField();
         if (strpos($str, 'AS') !== false) {
@@ -268,7 +269,9 @@ class Sql
             $result = $this->parseFunc($str);
         } elseif (strpos($str, '.') !== false) {
             $result = $this->parsePoint($str);
-        } else {
+        } elseif ($isValue) { //如果存在是常量的可能，则设置value值
+            $result['value'] = trim($str);
+        } else { //如果不存在是常量的可能，则设置为字段
             $result['name'] = trim($str);
             $result['tableName'] = $this->getFrom()[0]['name'];
         }

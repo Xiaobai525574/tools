@@ -37,7 +37,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  *
  * ━━━━━━感觉萌萌哒━━━━━━
  */
-
 class SqlExcel extends Spreadsheet
 {
 
@@ -127,7 +126,7 @@ class SqlExcel extends Spreadsheet
                 }
             }
         }
-        if (!$this->getSheetCount()) $this->addSheet(new sqlSheet(null, 'sqlSheet'));
+        if (!$this->getSheetCount()) $this->addSheet(new sqlSheet());
 
         return $this;
     }
@@ -153,86 +152,41 @@ class SqlExcel extends Spreadsheet
      */
     public function getSheetByActualName($actualName)
     {
-        $sheetName = $this->getSheetName($actualName);
-        return $this->getSheetByName($sheetName);
-    }
-
-    /**
-     * 根据所给sheet页名称，获取真实表名
-     * @param $sheetName
-     * @return mixed
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     */
-    public function getActualName($sheetName)
-    {
-        $actualName = $sheetName;
-        $renameTable = config('tools.excel.renameTableTitle');
-        if ($this->sheetNameExists($renameTable)) {
-            $sheet = $this->getSheetByName($renameTable);
-            $highestRow = $sheet->getHighestRow();
-
-            for ($i = 2; $i <= $highestRow; $i++) {
-                $value = $sheet->getCell('A' . $i)->getValue();
-                if ($value == $sheetName) {
-                    $actualName = $sheet->getCell('B' . $i)->getValue();
-                }
+        foreach ($this->getWorksheetIterator() as $sheet) {
+            if ($sheet->getActualName() === $actualName) {
+                return $sheet;
             }
         }
 
-        return $actualName;
-    }
-
-    /**
-     * 根据所给真实表名，获取sheet页名称
-     * @param $actualName
-     * @return mixed
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     */
-    public function getSheetName($actualName)
-    {
-        $sheetName = $actualName;
-        $renameTable = config('tools.excel.renameTableTitle');
-        if ($this->sheetNameExists($renameTable)) {
-            $sheet = $this->getSheetByName($renameTable);
-            $highestRow = $sheet->getHighestRow();
-
-            for ($i = 2; $i <= $highestRow; $i++) {
-                $value = $sheet->getCell('B' . $i)->getValue();
-                if ($value == $actualName) {
-                    $sheetName = $sheet->getCell('A' . $i)->getValue();
-                }
-            }
-        }
-
-        return $sheetName;
+        return null;
     }
 
     /**
      * 根据表名获取一个sheet页，并处理表名过长问题
-     * @param $name
+     * @param $actualName
      * @return sqlSheet
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    private function makeSqlSheet($name)
+    private function makeSqlSheet($actualName)
     {
-        $alias = $name;
-        if (strlen($name) > 31) {
-            $alias = substr($name, 0, 31);
-            $this->makeRenameTableSheet($alias, $name);
+        $sheetName = $actualName;
+        if (strlen($actualName) > 31) {
+            $sheetName = substr($actualName, 0, 31);
+            $this->makeRenameTableSheet($sheetName, $actualName);
         }
-        $sheet = new sqlSheet(null, $alias);
+        $sheet = new sqlSheet(null, $sheetName, $actualName);
 
         return $sheet;
     }
 
     /**
      * 向表重命名页添加一条数据
-     * @param $alias
-     * @param $name
+     * @param $sheetName
+     * @param $actualName
      * @return bool
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    private function makeRenameTableSheet($alias, $name)
+    private function makeRenameTableSheet($sheetName, $actualName)
     {
         $title = config('tools.excel.renameTableTitle');
         if (!$this->sheetNameExists($title)) {
@@ -246,8 +200,8 @@ class SqlExcel extends Spreadsheet
 
         $sheet = $this->getSheetByName($title);
         $currentRow = $sheet->getHighestRow() + 1;
-        $sheet->getCell('A' . $currentRow)->setValue($alias);
-        $sheet->getCell('B' . $currentRow)->setValue($name);
+        $sheet->getCell('A' . $currentRow)->setValue($sheetName);
+        $sheet->getCell('B' . $currentRow)->setValue($actualName);
 
         return true;
     }

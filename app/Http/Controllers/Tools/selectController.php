@@ -105,8 +105,7 @@ class selectController extends Controller
         if ($sqlExcel->getSheetNames()[0] == 'sqlSheet') abort(403, '数据库表未找到');
 
         foreach ($tables as $tableName => $table) {
-            $sheetName = $sqlExcel->getSheetName($tableName);
-            $sheet = $sqlExcel->getSheetByName($sheetName);
+            $sheet = $sqlExcel->getSheetByActualName($tableName);
             $sheet->addSqlRows($table['rows'] - 1)
                 ->uniqueSqlRows()
                 ->redData($table['red'])

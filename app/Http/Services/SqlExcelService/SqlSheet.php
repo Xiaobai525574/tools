@@ -37,7 +37,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  *　　　　　　　　　　┃┫┫　┃┫┫
  *　　　　　　　　　　┗┻┛　┗┻┛+ + + +
  */
-
 class SqlSheet extends Worksheet
 {
     /*为长度为1的字段和长度等于2的和长度大于2字段分别建立索引*/
@@ -51,6 +50,54 @@ class SqlSheet extends Worksheet
      * @var string
      */
     public $actualName = '';
+
+    /**
+     * SqlSheet constructor.
+     * @param SqlExcel|null $parent
+     * @param string $pTitle
+     * @param null $actualName
+     */
+    public function __construct(SqlExcel $parent = null, $pTitle = 'SqlSheet', $actualName = null)
+    {
+        parent::__construct($parent, $pTitle);
+
+        if (!$actualName) $actualName = $pTitle;
+        $this->setActualName($actualName);
+    }
+
+    /**
+     * 获取字段索引集合（该sheet页第一行单元格的数据）
+     * @return array
+     */
+    public function getFieldsIndexes()
+    {
+        return $this->fieldsIndexes;
+    }
+
+    public function setFieldsIndexes($indexes)
+    {
+        $this->fieldsIndexes = $indexes;
+    }
+
+    public function getCurrentRow()
+    {
+        return $this->currentRow;
+    }
+
+    public function setCurrentRow($currentRow)
+    {
+        $this->currentRow = $currentRow;
+    }
+
+    public function getActualName()
+    {
+        return $this->actualName;
+    }
+
+    public function setActualName($actualName)
+    {
+        $this->actualName = $actualName;
+    }
 
     /**
      * 初始化列：列宽、数据标志位（长度为1的字段和长度等于2和长度大于2的字段用两个计数器去标志）
@@ -83,10 +130,11 @@ class SqlSheet extends Worksheet
         return $this;
     }
 
-    public function primaryKey($actualName = null)
+    public function primaryKey()
     {
         /*todo:标注主键*/
-        if (!$actualName);
+        $actualName = $this->getActualName();
+
         return $this;
     }
 
@@ -264,30 +312,6 @@ class SqlSheet extends Worksheet
         }
 
         return $index;
-    }
-
-    /**
-     * 获取字段索引集合（该sheet页第一行单元格的数据）
-     * @return array
-     */
-    public function getFieldsIndexes()
-    {
-        return $this->fieldsIndexes;
-    }
-
-    public function setFieldsIndexes($indexes)
-    {
-        $this->fieldsIndexes = $indexes;
-    }
-
-    public function getCurrentRow()
-    {
-        return $this->currentRow;
-    }
-
-    public function setCurrentRow($currentRow)
-    {
-        $this->currentRow = $currentRow;
     }
 
 }
