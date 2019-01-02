@@ -3,7 +3,8 @@ return [
     'storage' => [
         'tablesPath' => '\\public\\tables\\',
         'deletePath' => '\\public\\delete\\',
-        'selectPath' => '\\public\\select\\'
+        'selectPath' => '\\public\\select\\',
+        'tablesDefinitionPath' => 'app\\public\\tablesDefinition\\'
     ],
     'excel' => [
         /*Excel格式*/
