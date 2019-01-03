@@ -110,7 +110,7 @@ class SqlSheet extends Worksheet
     public function initSqlFields()
     {
         if ($this->getCell('A2')->getFormattedValue() == '') return $this;
-        /*获取该表的主键、唯一键*/
+        /*获取该表的主键、唯一约束*/
         $tables = new Tables();
         $keys = $tables->getKeys($this->getActualName());
         /*主键样式：填充色标绿*/
@@ -124,7 +124,7 @@ class SqlSheet extends Worksheet
                 'name' => 'ＭＳ Ｐゴシック'
             ]
         ]);
-        /*唯一键样式：字体颜色标红*/
+        /*唯一约束样式：字体颜色标红*/
         $uniqueStyle = new Style();
         $uniqueArr = [
             'font' => [
@@ -145,10 +145,10 @@ class SqlSheet extends Worksheet
             foreach ($keys['primary_key'] as $key) {
                 if ($field->getValue() === $key) $this->duplicateStyle($primaryStyle, $columnIndex . '1');
             }
-            /*标识唯一键*/
+            /*标识唯一约束*/
             foreach ($keys['unique_key'] as $key) {
                 if ($field->getValue() === $key) {
-                    /*如果主键、唯一键重合，既标填充色，也标字体颜色*/
+                    /*如果主键、唯一约束重合，既标填充色，也标字体颜色*/
                     $color = $field->getStyle()->getFill()->getStartColor()->getARGB();
                     if ($color === config('tools.color.green')) {
                         $uniqueArr['fill'] = [

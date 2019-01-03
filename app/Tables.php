@@ -8,7 +8,7 @@ class Tables extends Model
 {
 
     /**
-     * 根据表名查询主键、唯一键
+     * 根据表名查询主键、唯一约束
      * @param $tableName
      * @return mixed
      */
