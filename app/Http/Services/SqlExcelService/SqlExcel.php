@@ -146,8 +146,7 @@ class SqlExcel extends Spreadsheet
     /**
      * 通过真实表名，获取对应的sheet页
      * @param $actualName
-     * @return SqlSheet
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @return Worksheet|null
      */
     public function getSheetByActualName($actualName)
     {

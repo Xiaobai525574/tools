@@ -15,8 +15,9 @@ return [
         'renameTableTitle' => '__RENAME_TABLE'
     ],
     'color' => [
-        'red' => 'FF0000',
-        'orange' => 'ffc000',
-        'yellow' => '',
+        'red' => 'FFFF0000',
+        'orange' => 'FFFFC000',
+        'yellow' => 'FFFFFF00',
+        'green' => 'FF92D050'
     ]
 ];

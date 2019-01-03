@@ -17,8 +17,8 @@ class CreateTablesTable extends Migration
             $table->increments('id');
             $table->string('table_name')->unique();
             $table->string('sheet_name');
-            $table->string('primary_key');
-            $table->string('unique_key');
+            $table->string('primary_key')->nullable();
+            $table->string('unique_key')->nullable();
             $table->timestamps();
         });
     }

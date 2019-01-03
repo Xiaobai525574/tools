@@ -8,11 +8,14 @@
 
 namespace App\Http\Services\SqlExcelService;
 
+use App\Tables;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Symfony\Component\Console\Helper\Table;
 
 /**
  *　　　　　　　　┏┓　　　┏┓+ +
@@ -104,15 +107,61 @@ class SqlSheet extends Worksheet
      * @return $this
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function initSqlColumns()
+    public function initSqlFields()
     {
         if ($this->getCell('A2')->getFormattedValue() == '') return $this;
-        $fieldsIndexes = [];
+        /*获取该表的主键、唯一键*/
+        $tables = new Tables();
+        $keys = $tables->getKeys($this->getActualName());
+        /*主键样式：填充色标绿*/
+        $primaryStyle = new Style();
+        $primaryStyle->applyFromArray([
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'color' => ['argb' => config('tools.color.green')]
+            ],
+            'font' => [
+                'name' => 'ＭＳ Ｐゴシック'
+            ]
+        ]);
+        /*唯一键样式：字体颜色标红*/
+        $uniqueStyle = new Style();
+        $uniqueArr = [
+            'font' => [
+                'name' => 'ＭＳ Ｐゴシック',
+                'color' => ['argb' => config('tools.color.red')]
+            ]
+        ];
+
         $i = '0';
         $j = '10';
         $m = '100';
+        $fieldsIndexes = [];
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
+            /*列宽*/
             $this->getColumnDimension($columnIndex)->setAutoSize(true);
+            /*标识主键*/
+            $field = $this->getCell($columnIndex . '1');
+            foreach ($keys['primary_key'] as $key) {
+                if ($field->getValue() === $key) $this->duplicateStyle($primaryStyle, $columnIndex . '1');
+            }
+            /*标识唯一键*/
+            foreach ($keys['unique_key'] as $key) {
+                if ($field->getValue() === $key) {
+                    /*如果主键、唯一键重合，既标填充色，也标字体颜色*/
+                    $color = $field->getStyle()->getFill()->getStartColor()->getARGB();
+                    if ($color === config('tools.color.green')) {
+                        $uniqueArr['fill'] = [
+                            'fillType' => Fill::FILL_SOLID,
+                            'color' => ['argb' => config('tools.color.green')]
+                        ];
+                    }
+
+                    $uniqueStyle->applyFromArray($uniqueArr);
+                    $this->duplicateStyle($uniqueStyle, $columnIndex . '1');
+                }
+            }
+            /*数据标志位*/
             $len = strlen($this->getCell($columnIndex . 2)->getFormattedValue());
             if ($len == 1) {
                 $fieldsIndexes[$columnIndex] = ['type' => 'character', 'index' => $i];
@@ -126,14 +175,6 @@ class SqlSheet extends Worksheet
             }
         }
         $this->setFieldsIndexes($fieldsIndexes);
-
-        return $this;
-    }
-
-    public function primaryKey()
-    {
-        /*todo:标注主键*/
-        $actualName = $this->getActualName();
 
         return $this;
     }
@@ -179,7 +220,7 @@ class SqlSheet extends Worksheet
      */
     public function uniqueSqlRows()
     {
-        if (!$this->getFieldsIndexes()) $this->initSqlColumns();
+        if (!$this->getFieldsIndexes()) $this->initSqlFields();
         foreach ($this->getRowIterator(config('tools.excel.startRow')) as $rowIndex => $row) {
             foreach ($row->getCellIterator() as $columnIndex => $cell) {
                 $num = $this->getSqlCellIndex($columnIndex, $rowIndex);
@@ -210,7 +251,7 @@ class SqlSheet extends Worksheet
         $style->applyFromArray([
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'color' => ['rgb' => config('tools.color.red')]
+                'color' => ['argb' => config('tools.color.red')]
             ],
             'font' => [
                 'name' => 'ＭＳ Ｐゴシック'
@@ -254,7 +295,7 @@ class SqlSheet extends Worksheet
         $style->applyFromArray([
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'color' => ['rgb' => config('tools.color.orange')]
+                'color' => ['argb' => config('tools.color.orange')]
             ],
             'font' => [
                 'name' => 'ＭＳ Ｐゴシック'

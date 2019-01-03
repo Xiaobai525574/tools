@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Tables;
 use Illuminate\Console\Command;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -34,24 +35,52 @@ class excelPersistence extends Command
     /**
      * Execute the console command.
      *
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
     public function handle()
     {
-        $excelsPath = $this->getFileNames();
+        $excelsPath = $this->getFilesPath();
+        $tables = new Tables();
+        $tables->truncate();
         foreach ($excelsPath as $excelPath) {
-            $this->info($excelPath);
+            $this->info('start parsing excel:' . $excelPath);
+
             $excel = IOFactory::load($excelPath);
-            if ($excel) {
-                $this->info('233');
+            foreach ($excel->getWorksheetIterator() as $key => $sheet) {
+                if ($key == 0) continue;
+                $tables = new Tables();
+                $tables->table_name = $sheet->getCell('H2')->getValue();
+                $tables->sheet_name = $sheet->getTitle();
+                $highestRow = $sheet->getHighestRow();
+                $primaryKey = '';
+                $uniqueKey = '';
+                for ($i = 9; $i <= $highestRow; $i++) {
+                    if ($sheet->getCell('L' . $i)->getValue() === '○') {
+                        if ($primaryKey) $primaryKey .= ',';
+                        $primaryKey .= $sheet->getCell('G' . $i)->getValue();
+                    }
+                    if ($sheet->getCell('N' . $i)->getValue() === '○') {
+                        if ($uniqueKey) $uniqueKey .= ',';
+                        $uniqueKey .= $sheet->getCell('G' . $i)->getValue();
+                    }
+                }
+                $tables->primary_key = $primaryKey;
+                $tables->unique_key = $uniqueKey;
+                $tables->save();
             }
             unset($excel);
-        }
 
-        $this->info('success!^-^');
+            $this->info('success!^-^');
+        }
+        $this->info('completed!^-^');
     }
 
-    public function getFileNames()
+    /**
+     * 获取excel路径集合
+     * @return array
+     */
+    public function getFilesPath()
     {
         //取得当前文件所在目录
         $dir = storage_path(config('tools.storage.tablesDefinitionPath'));
