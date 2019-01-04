@@ -119,8 +119,7 @@ class SqlExcel extends Spreadsheet
                 $tplSheet = IOFactory::load($this->getAPath($tplExcelPath))->getSheet(0);
                 foreach ($tplSheet->getRowIterator() as $rowIndex => $row) {
                     foreach ($row->getCellIterator() as $columnIndex => $cell) {
-                        $sqlSheet->setCellValue($columnIndex . $rowIndex, $cell->getValue())
-                            ->duplicateStyle($cell->getStyle(), $columnIndex . $rowIndex);
+                        $sqlSheet->setCellValue($columnIndex . $rowIndex, $cell->getValue());
                     }
                 }
             }

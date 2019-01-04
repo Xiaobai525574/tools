@@ -9,13 +9,10 @@
 namespace App\Http\Services\SqlExcelService;
 
 use App\Tables;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Symfony\Component\Console\Helper\Table;
 
 /**
  *　　　　　　　　┏┓　　　┏┓+ +
@@ -204,10 +201,10 @@ class SqlSheet extends Worksheet
     public function addSqlRow()
     {
         $highestRow = $this->getHighestRow();
-        $highestColumn = Coordinate::columnIndexFromString($this->getHighestColumn());
-        for ($column = 1; $column <= $highestColumn; $column++) {
-            $this->setCellValueByColumnAndRow($column, $highestRow + 1
-                , $this->getCellByColumnAndRow($column, $highestRow));
+        foreach ($this->getColumnIterator() as $columnIndex => $column) {
+            $cellValue = $this->getCell($columnIndex . $highestRow)->getValue();
+            $this->setCellValueExplicit($columnIndex . ($highestRow + 1)
+                , $cellValue, DataType::TYPE_STRING);
         }
 
         return $this;
