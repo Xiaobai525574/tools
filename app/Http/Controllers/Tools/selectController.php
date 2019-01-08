@@ -30,7 +30,6 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  *　　　┗┻┛　┗┻┛
  *　　　
  */
-
 class selectController extends Controller
 {
     /**
@@ -67,7 +66,7 @@ class selectController extends Controller
         //需要标橙的单元格数组
         $orangeFields = $select->getSelectFieldsGroup();
 
-        $tables = array_column($select->getFrom(), 'name');
+        $tables = array_unique(array_column($select->getFrom(), 'name'));
         $sqlExcel = $sqlExcel->getSqlExcel($tables);
 
         foreach ($tables as $tableName) {
