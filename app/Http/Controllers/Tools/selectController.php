@@ -77,7 +77,6 @@ class selectController extends Controller
                 ->orangeData($orangeFields[$tableName])
                 ->setSelectedCell('A1');
         }
-        $sqlExcel->getDefaultStyle()->getFont()->setName('ＭＳ Ｐゴシック');
         $sqlExcel->setActiveSheetIndex(0);
         $sqlExcel->saveSqlExcel($savePath);
 

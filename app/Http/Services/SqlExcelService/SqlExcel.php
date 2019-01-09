@@ -125,6 +125,7 @@ class SqlExcel extends Spreadsheet
             }
         }
         if (!$this->getSheetCount()) $this->addSheet(new sqlSheet());
+        $this->getDefaultStyle()->getFont()->setName('ＭＳ Ｐゴシック');
 
         return $this;
     }
