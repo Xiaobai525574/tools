@@ -1,10 +1,16 @@
 <?php
 return [
     'storage' => [
+        /*excel模板存放路径*/
         'tablesPath' => '\\public\\tables\\',
+        /**/
         'deletePath' => '\\public\\delete\\',
+        /*select Excel生成以后的存放路径*/
         'selectPath' => '\\public\\select\\',
-        'tablesDefinitionPath' => 'app\\public\\tablesDefinition\\'
+        /*数据库式样书的存放路径*/
+        'tablesDefinitionPath' => 'app\\public\\tablesDefinition\\',
+        /*需要检测位数是否符合要求的excel路径*/
+        'checkExcels' => 'app\\public\\checkExcels\\'
     ],
     'excel' => [
         /*Excel格式*/

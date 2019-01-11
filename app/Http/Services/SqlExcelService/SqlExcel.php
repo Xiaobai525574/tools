@@ -79,6 +79,31 @@ class SqlExcel extends Spreadsheet
     }
 
     /**
+     * 静态方法：根据所给sheet页名称，获取真实表名
+     * @param $sheetName
+     * @param $excel
+     * @return mixed
+     */
+    public static function getActualNameStatic($sheetName, $excel)
+    {
+        $actualName = $sheetName;
+        $renameTable = config('tools.excel.renameTableTitle');
+        if ($excel->sheetNameExists($renameTable)) {
+            $sheet = $excel->getSheetByName($renameTable);
+            $highestRow = $sheet->getHighestRow();
+
+            for ($i = 2; $i <= $highestRow; $i++) {
+                $value = $sheet->getCell('A' . $i)->getValue();
+                if ($value == $sheetName) {
+                    $actualName = $sheet->getCell('B' . $i)->getValue();
+                }
+            }
+        }
+
+        return $actualName;
+    }
+
+    /**
      * 获取相应的绝对路径
      * @param $path
      * @return string
