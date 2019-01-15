@@ -188,6 +188,7 @@ class SqlSheet extends Worksheet
                         break;
                     }
                 case 17:
+                    //todo:有问题，下面这个判断
                     if (strtotime($cellValue)) {
                         $fieldsIndexes[$columnIndex] = [
                             'type' => 'date17',
@@ -359,6 +360,7 @@ class SqlSheet extends Worksheet
                 $str = sprintf("%03d", $index) . mb_substr($str, 3);
                 break;
             case 8:
+            case 17:
                 $str = $index;
                 break;
             default:
@@ -397,6 +399,9 @@ class SqlSheet extends Worksheet
                 break;
             case 'date8':
                 $index = date('Ymd', strtotime($fieldIndex['index'] . ' +' . $add . ' day'));
+                break;
+            case 'date17':
+                $index = $fieldIndex['index'] + $add;
                 break;
             default:
                 return false;
