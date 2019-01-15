@@ -3,8 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Http\Services\SqlExcelService\SqlExcel;
-use App\Http\Services\SqlExcelService\SqlSheet;
-use App\Tables;
 use Illuminate\Console\Command;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 

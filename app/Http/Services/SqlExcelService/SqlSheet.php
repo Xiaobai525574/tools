@@ -133,7 +133,11 @@ class SqlSheet extends Worksheet
         $i = '0';
         $j = '10';
         $m = '100';
+        $n = '1000';
+        $d = 0;//8位日期计数器
+        $s = 0;//17位日期计数器
         $fieldsIndexes = [];
+        $date = date('YmdHi', time());
         foreach ($this->getColumnIterator() as $columnIndex => $column) {
             /*列宽*/
             $this->getColumnDimension($columnIndex)->setAutoSize(true);
@@ -159,16 +163,42 @@ class SqlSheet extends Worksheet
                 }
             }
             /*数据标志位*/
-            $len = strlen($this->getCell($columnIndex . 2)->getFormattedValue());
-            if ($len == 1) {
-                $fieldsIndexes[$columnIndex] = ['type' => 'character', 'index' => $i];
-                $i = ($i >= 9) ? '0' : ((int)$i + 1);
-            } elseif ($len == 2) {
-                $fieldsIndexes[$columnIndex] = ['type' => 'character2', 'index' => $j];
-                $j = ($j >= 99) ? '10' : ((int)$j + 1);
-            } elseif ($len > 2) {
-                $fieldsIndexes[$columnIndex] = ['type' => 'characters', 'index' => $m];
-                $m = ($m >= 999) ? '100' : ((int)$m + 1);
+            $cellValue = $this->getCell($columnIndex . 2)->getFormattedValue();
+            $len = strlen($cellValue);
+            switch ($len) {
+                case 1:
+                    $fieldsIndexes[$columnIndex] = ['type' => 'character', 'index' => $i];
+                    $i = ($i >= 9) ? '0' : ((int)$i + 1);
+                    break;
+                case 2:
+                    $fieldsIndexes[$columnIndex] = ['type' => 'character2', 'index' => $j];
+                    $j = ($j >= 99) ? '10' : ((int)$j + 1);
+                    break;
+                case 3:
+                    $fieldsIndexes[$columnIndex] = ['type' => 'character3', 'index' => $m];
+                    $m = ($m >= 999) ? '100' : ((int)$m + 1);
+                    break;
+                case 8:
+                    if (strtotime($cellValue)) {
+                        $fieldsIndexes[$columnIndex] = [
+                            'type' => 'date8',
+                            'index' => date('Ymd', strtotime('now +' . $d . ' day'))
+                        ];
+                        $d++;
+                        break;
+                    }
+                case 17:
+                    if (strtotime($cellValue)) {
+                        $fieldsIndexes[$columnIndex] = [
+                            'type' => 'date17',
+                            'index' => $date . sprintf("%05d", $s)
+                        ];
+                        $s++;
+                        break;
+                    }
+                default:
+                    $fieldsIndexes[$columnIndex] = ['type' => 'characters', 'index' => $n];
+                    $n = ($n >= 9999) ? '1000' : ((int)$n + 1);
             }
         }
         $this->setFieldsIndexes($fieldsIndexes);
@@ -220,9 +250,9 @@ class SqlSheet extends Worksheet
         if (!$this->getFieldsIndexes()) $this->initSqlFields();
         foreach ($this->getRowIterator(config('tools.excel.startRow')) as $rowIndex => $row) {
             foreach ($row->getCellIterator() as $columnIndex => $cell) {
-                $num = $this->getSqlCellIndex($columnIndex, $rowIndex);
+                $index = $this->getSqlCellIndex($columnIndex, $rowIndex);
                 $this->setCellValueExplicit($columnIndex . $rowIndex
-                    , $this->mergeStr($cell->getValue(), $num)
+                    , $this->mergeStr($cell->getValue(), $index)
                     , DataType::TYPE_STRING)
                     ->duplicateStyle($this->getStyle($columnIndex . 2), $columnIndex . $rowIndex);
             }
@@ -310,20 +340,29 @@ class SqlSheet extends Worksheet
     }
 
     /**
-     * 合并两个字符串（将$num覆盖在$str的前三位或前两位或前一位）
+     * 合并两个字符串（将$index覆盖在$str的前三位或前两位或前一位）
      * @param $str
-     * @param $num
+     * @param $index
      * @return string
      */
-    private function mergeStr($str, $num)
+    private function mergeStr($str, $index)
     {
         $len = strlen($str);
-        if ($len == 1) {
-            $str = $num;
-        } elseif ($len == 2) {
-            $str = sprintf("%02d", $num) . mb_substr($str, 2);
-        } elseif ($len > 2) {
-            $str = sprintf("%03d", $num) . mb_substr($str, 3);
+        switch ($len) {
+            case 1:
+                $str = $index;
+                break;
+            case 2:
+                $str = sprintf("%02d", $index) . mb_substr($str, 2);
+                break;
+            case 3:
+                $str = sprintf("%03d", $index) . mb_substr($str, 3);
+                break;
+            case 8:
+                $str = $index;
+                break;
+            default:
+                $str = sprintf("%04d", $index) . mb_substr($str, 4);
         }
 
         return $str;
@@ -338,15 +377,29 @@ class SqlSheet extends Worksheet
     private function getSqlCellIndex($column, $row)
     {
         $fieldIndex = $this->getFieldsIndexes()[$column];
-        $index = $fieldIndex['index'] + $row - config('tools.excel.startRow');
-        if ($fieldIndex['type'] == 'character') {
-            $index = $index % 10;
-        } elseif ($fieldIndex['type'] == 'character2') {
-            $index = $index % 100;
-        } elseif ($fieldIndex['type'] == 'characters') {
-            $index = $index % 1000;
-        } else {
-            return false;
+        $add = $row - config('tools.excel.startRow');
+        $index = $fieldIndex['index'] + $add;
+        switch ($fieldIndex['type']) {
+            case 'character':
+                $index = $index % 10;
+                break;
+            case 'character2':
+                $index = $index % 100;
+                $index = $index < 10 ? '1' . $index : $index;
+                break;
+            case 'character3':
+                $index = $index % 1000;
+                $index = $index < 100 ? '1' . sprintf("%02d", $index) : $index;
+                break;
+            case 'characters':
+                $index = $index % 10000;
+                $index = $index < 1000 ? '1' . sprintf("%03d", $index) : $index;
+                break;
+            case 'date8':
+                $index = date('Ymd', strtotime($fieldIndex['index'] . ' +' . $add . ' day'));
+                break;
+            default:
+                return false;
         }
 
         return $index;
