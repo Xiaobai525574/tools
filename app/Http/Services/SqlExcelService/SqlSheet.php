@@ -188,8 +188,7 @@ class SqlSheet extends Worksheet
                         break;
                     }
                 case 17:
-                    //todo:有问题，下面这个判断
-                    if (strtotime($cellValue)) {
+                    if (strtotime(mb_substr($cellValue, 0, -3))) {
                         $fieldsIndexes[$columnIndex] = [
                             'type' => 'date17',
                             'index' => $date . sprintf("%05d", $s)
