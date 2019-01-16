@@ -366,7 +366,7 @@ class SqlSheet extends Worksheet
                 $str = sprintf("%04d", $index) . mb_substr($str, 4);
         }
 
-        return $str;
+        return (string)$str;
     }
 
     /**
@@ -400,13 +400,13 @@ class SqlSheet extends Worksheet
                 $index = date('Ymd', strtotime($fieldIndex['index'] . ' +' . $add . ' day'));
                 break;
             case 'date17':
-                $index = $fieldIndex['index'] + $add;
+                $index = gmp_add($fieldIndex['index'], $add);
                 break;
             default:
                 return false;
         }
 
-        return $index;
+        return (string)$index;
     }
 
 }
