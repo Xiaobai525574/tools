@@ -347,23 +347,25 @@ class SqlSheet extends Worksheet
      */
     private function mergeStr($str, $index)
     {
-        $len = strlen($str);
-        switch ($len) {
-            case 1:
-                $str = $index;
+        switch ($index['type']) {
+            case 'character':
+                $str = $index['index'];
                 break;
-            case 2:
-                $str = sprintf("%02d", $index) . mb_substr($str, 2);
+            case 'character2':
+                $str = sprintf("%02d", $index['index']) . mb_substr($str, 2);
                 break;
-            case 3:
-                $str = sprintf("%03d", $index) . mb_substr($str, 3);
+            case 'character3':
+                $str = sprintf("%03d", $index['index']) . mb_substr($str, 3);
                 break;
-            case 8:
-            case 17:
-                $str = $index;
+            case 'characters':
+                $str = sprintf("%04d", $index['index']) . mb_substr($str, 4);
+                break;
+            case 'date8':
+            case 'date17':
+                $str = $index['index'];
                 break;
             default:
-                $str = sprintf("%04d", $index) . mb_substr($str, 4);
+                return false;
         }
 
         return (string)$str;
@@ -377,8 +379,12 @@ class SqlSheet extends Worksheet
      */
     private function getSqlCellIndex($column, $row)
     {
+
+        //当前列初始index
         $fieldIndex = $this->getFieldsIndexes()[$column];
+        //当前列初始index需要加几
         $add = $row - config('tools.excel.startRow');
+        //单元格index
         $index = $fieldIndex['index'] + $add;
         switch ($fieldIndex['type']) {
             case 'character':
@@ -405,8 +411,9 @@ class SqlSheet extends Worksheet
             default:
                 return false;
         }
+        $fieldIndex['index'] = (string)$index;
 
-        return (string)$index;
+        return $fieldIndex;
     }
 
 }
