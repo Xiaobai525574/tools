@@ -142,9 +142,11 @@ php;
         $outputs = $this->getValuesFromExcel($outputs);
         $outputsStr = '';
         foreach ($outputs as $key => $val) {
-            $outputsStr .= '        assertThat(result.get(0).get' . ucfirst($val['resultMap']) . "(), is(\"";
-            if (key_exists('value', $val)) $outputsStr .= $val['value'];
-            $outputsStr .= "\"));\r\n";
+            if (key_exists('resultMap', $val)) {
+                $outputsStr .= '        assertThat(result.get(0).get' . ucfirst($val['resultMap']) . "(), is(\"";
+                if (key_exists('value', $val)) $outputsStr .= $val['value'];
+                $outputsStr .= "\"));\r\n";
+            }
         }
 
         return $outputsStr;
