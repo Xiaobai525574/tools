@@ -139,6 +139,17 @@ class Sql
         return $result;
     }
 
+    /**
+     * 向from中添加一张表信息
+     * @param $table
+     */
+    public function addFrom($table)
+    {
+        $from = $this->getFrom();
+        array_push($from, $table);
+        $this->setFrom($from);
+    }
+
     public function where($where, $filter = false)
     {
         if (!$where) return $this;
@@ -315,6 +326,7 @@ class Sql
     /**
      * 解析sql方法 如：COUNT(ikt_sqh_bng)
      * @param $str
+     * @param bool $reset
      * @return array
      */
     protected function parseFunc($str, $reset = false)
@@ -365,7 +377,7 @@ class Sql
      * @param $str
      * @return mixed|string
      */
-    protected function strFilter($str)
+    public static function strFilter($str)
     {
         /*去除换行符*/
         $str = str_replace(array("\r\n", "\r", "\n"), ' ', $str);

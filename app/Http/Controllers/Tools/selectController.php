@@ -181,8 +181,10 @@ class selectController extends Controller
     private function formatTables($input)
     {
         $result = [];
+        $sqlSelect = $this->app->make(SqlSelect::class);
         foreach ($input as $key => $value) {
             $value['name'] = trim($value['name']);
+            $sqlSelect->addFrom(['name' => $value['name']]);
             $value['rows'] = trim($value['rows']);
             $value['red'] = $this->parseRedParameter($value['red']);
             $value['orange'] = $this->parseOrangeParameter($value['orange']);
@@ -200,8 +202,8 @@ class selectController extends Controller
     private function parseRedParameter($red)
     {
         if (strpos($red, '=') !== false) {
-            $selectSql = new SqlSelect();
-            $red = $selectSql->where($red, true)->getWhereFields();
+            $sqlSelect = $this->app->make(SqlSelect::class);
+            $red = $sqlSelect->where($red, true)->getWhereFields();
         } else {
             $red = explode(',', str_replace(' ', '', $red));
             foreach ($red as $key => &$value) {
@@ -219,8 +221,8 @@ class selectController extends Controller
      */
     private function parseOrangeParameter($orange)
     {
-        $select = new SqlSelect();
-        return $select->select($orange, true)->getSelectFields();
+        $sqlSelect = $this->app->make(SqlSelect::class);
+        return $sqlSelect->select($orange, true)->getSelectFields();
     }
 
     /**

@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
             return new SqlCodeSelect();
         });
         /*注册select sql处理类*/
-        $this->app->bind(SqlSelect::class, function () {
+        $this->app->singleton(SqlSelect::class, function () {
             return new SqlSelect();
         });
 

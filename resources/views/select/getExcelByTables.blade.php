@@ -13,6 +13,7 @@
 @stop
 
 @section('content')
+    <div class="alert alert-danger" role="alert">提示：select手动挡已不再维护，标红、标橙、resultMap可能会报错^-^</div>
     <div class="panel panel-default">
         <div class="panel-heading" role="tab" id="headingTwo">
             <h4 class="panel-title">
@@ -27,14 +28,15 @@
             <div class="panel-body">
                 <pre>
                     <span class="bg-info">标橙支持输入方式：</span>
-                        1、逗号分隔(有无空格、换行、表别名、重复字段都没关系):
-                        "t1.bnk_cod
-                        ,t1.dup_sfp_cen_jho_id
-                        ,t1.tyo_kis_hi"
+                        1、逗号分隔(有无空格、换行都没关系，不再支持表别名):
+                        "bnk_cod
+                        ,dup_sfp_cen_jho_id
+                        ,tyo_kis_hi"
                     <span class="bg-info">标红支持输入方式：</span>
                         1、逗号分隔(有无空格都没关系，不支持换行、表别名):
                         "bnk_cod,    skj_flg"
-                        2、xml文件直接复制代码（有无空格、换行、表别名、重复字段、字段名位置在“=”左边或者右边都没关系:
+                        {{--2、xml文件直接复制代码（有无空格、换行、表别名、重复字段、字段名位置在“=”左边或者右边都没关系:--}}
+                        2、不再支持以下方式：
                         "t3.bnk_cod = #{bankCd,jdbcType=CHAR}
                         AND t3.skj_flg = #{sakujoFlg,jdbcType=NUMERIC}"
                     <span class="bg-info">resultMap Xml支持输入方式：</span>
